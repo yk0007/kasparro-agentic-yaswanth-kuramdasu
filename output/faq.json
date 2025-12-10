@@ -1,0 +1,81 @@
+{
+  "page_type": "faq",
+  "product_name": "Cursor AI Editor",
+  "questions": [
+    {
+      "id": "q1",
+      "category": "Informational",
+      "question": "What exactly is the Cursor AI Editor?",
+      "answer": "The Cursor AI Editor is a tool designed for developers and AI engineers. It integrates GPT-4 and Claude 3.5 to help you write code 3x faster and explain complex logic instantly. It features natural language code generation and auto-debugging.",
+      "logic_blocks_used": [
+        "benefits_block"
+      ]
+    },
+    {
+      "id": "q5",
+      "category": "Safety",
+      "question": "Are there any known side effects of using the Cursor AI Editor?",
+      "answer": "Yes, there can be occasional hallucinations in complex logic when using the Cursor AI Editor. It is recommended to perform a patch test before first use and discontinue use if irritation occurs. This product is suitable for Developers and AI Engineers.",
+      "logic_blocks_used": [
+        "safety_block"
+      ]
+    },
+    {
+      "id": "q9",
+      "category": "Usage",
+      "question": "How do I initiate code generation from a text prompt?",
+      "answer": "To initiate code generation from a text prompt, press Ctrl+K. This allows you to generate code directly from your text input.",
+      "logic_blocks_used": [
+        "usage_block"
+      ]
+    },
+    {
+      "id": "q13",
+      "category": "Purchase",
+      "question": "Is the Cursor AI Editor truly free to use indefinitely?",
+      "answer": "The Cursor AI Editor is free to use. A Pro plan is available for $20/month.",
+      "logic_blocks_used": [
+        "benefits_block"
+      ]
+    },
+    {
+      "id": "q17",
+      "category": "Comparison",
+      "question": "How does the code writing speed of Cursor AI Editor compare to manual coding?",
+      "answer": "Cursor AI Editor writes code 3x faster than manual coding. This benefit applies to Developers and AI Engineers.",
+      "logic_blocks_used": [
+        "benefits_block",
+        "safety_block"
+      ]
+    },
+    {
+      "id": "q2",
+      "category": "Informational",
+      "question": "What makes the GPT-4 & Claude 3.5 integration special for developers?",
+      "answer": "The GPT-4 & Claude 3.5 integration allows developers to write code 3x faster and instantly understand complex logic. This means you can refactor code by highlighting it or generate code from text prompts using Ctrl+K. These features are designed to improve your workflow.",
+      "logic_blocks_used": [
+        "benefits_block"
+      ]
+    },
+    {
+      "id": "q3",
+      "category": "Informational",
+      "question": "Can you tell me more about the 'Natural Language Code Generation' ingredient?",
+      "answer": "Natural Language Code Generation is a key ingredient in Cursor AI Editor. It works in conjunction with GPT-4 & Claude 3.5 Integration to help you write code 3x faster. This feature allows the editor to generate code from text prompts.",
+      "logic_blocks_used": [
+        "benefits_block"
+      ]
+    }
+  ],
+  "metadata": {
+    "generated_at": "2025-12-10T17:35:30.702605",
+    "agent": "output_agent",
+    "version": "1.0",
+    "total_questions": 7,
+    "logic_blocks_used": [
+      "benefits_block",
+      "usage_block",
+      "safety_block"
+    ]
+  }
+}

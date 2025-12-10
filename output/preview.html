@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor AI Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #fff; color: #111; line-height: 1.6; }
+        
+        /* Hero */
+        .hero { padding: 100px 20px; text-align: center; background: #f8f9fa; }
+        .hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 16px; }
+        .hero .desc { color: #666; font-size: 1.2rem; max-width: 600px; margin: 0 auto 24px; }
+        .hero .price { font-size: 2rem; font-weight: 700; color: #111; }
+        
+        /* Container */
+        .container { max-width: 900px; margin: 0 auto; padding: 80px 20px; }
+        .section-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 32px; text-align: center; }
+        
+        /* Tags */
+        .tags { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 24px 0; }
+        .tag { background: #f1f1f1; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; }
+        
+        /* Benefits */
+        .benefits ul { list-style: none; max-width: 500px; margin: 0 auto; }
+        .benefits li { padding: 16px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; }
+        .benefits li::before { content: "✓"; color: #10b981; font-weight: bold; }
+        
+        /* Usage */
+        .usage { background: #f8f9fa; padding: 60px 20px; text-align: center; }
+        .usage p { color: #666; max-width: 600px; margin: 0 auto; }
+        
+        /* Comparison */
+        .comparison { background: #111; color: #fff; padding: 80px 20px; }
+        .comparison .section-title { color: #fff; }
+        .comp-table { max-width: 800px; margin: 0 auto; }
+        .comp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px; border-bottom: 1px solid #333; }
+        .comp-row:first-child { font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.8rem; }
+        .comp-row span { color: #10b981; font-size: 0.75rem; }
+        
+        /* FAQ */
+        .faq { padding: 80px 20px; }
+        .faq-item { max-width: 700px; margin: 0 auto 24px; padding: 24px; background: #f8f9fa; border-radius: 12px; }
+        .faq-q { font-weight: 600; margin-bottom: 8px; }
+        .faq-a { color: #666; }
+        
+        /* Footer */
+        footer { text-align: center; padding: 40px; color: #888; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>Cursor AI Editor</h1>
+        <p class="desc">GPT-4 & Claude 3.5 Integration</p>
+        <div class="tags"><span class="tag">Natural Language Code Generation</span><span class="tag">Auto-Debugging</span><span class="tag">Codebase Chat</span></div>
+        <div class="price">Free (Pro plan: $20/month)</div>
+    </section>
+    
+    <div class="container benefits">
+        <h2 class="section-title">Benefits</h2>
+        <ul><li>Writes code 3x faster</li><li>Explains complex logic instantly</li></ul>
+    </div>
+    
+    <section class="usage">
+        <h2 class="section-title">How to Use</h2>
+        <p>Highlight code to refactor or press Ctrl+K to generate from text prompts</p>
+        <p style="margin-top: 16px; font-size: 0.9rem;"><strong>Best for:</strong> Developers, AI Engineers</p>
+    </section>
+    
+    <section class="comparison">
+        <h2 class="section-title">Compare Options</h2>
+        <div class="comp-table">
+            <div class="comp-row">
+                <div>Feature</div>
+                <div>Cursor AI Editor<br><span>Main</span></div>
+                <div>GitHub Copilot<br><span>Alternative</span></div>
+            </div>
+            <div class="comp-row">
+                <div>Type / Version</div>
+                <div>GPT-4 & Claude 3.5 Integration</div>
+                <div>AI Pair Programmer powered by OpenAI Codex</div>
+            </div>
+            <div class="comp-row">
+                <div>Pricing</div>
+                <div>Free (Pro plan: $20/month)</div>
+                <div>$10/month or $100/year (Free for verified students and maintainers of popular open-source projects)</div>
+            </div>
+            <div class="comp-row">
+                <div>Target Users</div>
+                <div>Developers, AI Engineers</div>
+                <div>Developers, Software Engineers, AI Engineers</div>
+            </div>
+            <div class="comp-row">
+                <div>Key Features</div>
+                <div>Natural Language Code Generation, Auto-Debugging, Codebase Chat</div>
+                <div>Code Completion, Natural Language to Code, Code Explanation</div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="faq">
+        <h2 class="section-title">FAQ</h2>
+        
+        <div class="faq-item">
+            <div class="faq-q">What exactly is the Cursor AI Editor?</div>
+            <div class="faq-a">The Cursor AI Editor is a tool designed for developers and AI engineers. It integrates GPT-4 and Claude 3.5 to help you write code 3x faster and explain complex logic instantly. It features natural language code generation and auto-debugging.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Are there any known side effects of using the Cursor AI Editor?</div>
+            <div class="faq-a">Yes, there can be occasional hallucinations in complex logic when using the Cursor AI Editor. It is recommended to perform a patch test before first use and discontinue use if irritation occurs. This product is suitable for Developers and AI Engineers.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">How do I initiate code generation from a text prompt?</div>
+            <div class="faq-a">To initiate code generation from a text prompt, press Ctrl+K. This allows you to generate code directly from your text input.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Is the Cursor AI Editor truly free to use indefinitely?</div>
+            <div class="faq-a">The Cursor AI Editor is free to use. A Pro plan is available for $20/month.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">How does the code writing speed of Cursor AI Editor compare to manual coding?</div>
+            <div class="faq-a">Cursor AI Editor writes code 3x faster than manual coding. This benefit applies to Developers and AI Engineers.</div>
+        </div>
+    </section>
+    
+    <footer>
+        Generated by Multi-Agent Content System • Powered by LangGraph + Gemini
+    </footer>
+</body>
+</html>

@@ -1,0 +1,146 @@
+{
+  "page_type": "product",
+  "product": {
+    "name": "Cursor AI Editor",
+    "tagline": "Write code, understand it, instantly.",
+    "headline": "Write Code 3x Faster with GPT-4 & Claude 3.5 AI Editor.",
+    "description": "Unleash your coding potential with Cursor AI Editor, your ultimate AI co-pilot powered by GPT-4 and Claude 3.5! Experience a revolutionary workflow with natural language code generation, intelligent auto-debugging, and seamless codebase chat, allowing you to write code up to 3x faster and understand complex logic instantly. Elevate your development process and conquer any coding challenge with unparalleled efficiency and clarity.",
+    "concentration": "GPT-4 & Claude 3.5 Integration",
+    "key_features": [
+      "GPT-4 & Claude 3.5 Integration potency",
+      "Contains Natural Language Code Generation",
+      "Contains Auto-Debugging",
+      "Contains Codebase Chat",
+      "Writes code 3x faster effect",
+      "Explains complex logic instantly effect",
+      "Suitable for Developers & AI Engineers skin"
+    ],
+    "ingredients": {
+      "active_ingredients": [
+        "Natural Language Code Generation",
+        "Auto-Debugging",
+        "Codebase Chat"
+      ],
+      "ingredient_details": [
+        {
+          "name": "Natural Language Code Generation",
+          "type": "Supporting",
+          "function": "Skin conditioning",
+          "description": "Natural Language Code Generation is a key component of Cursor AI Editor formulation.",
+          "benefits": "Overall skin health"
+        },
+        {
+          "name": "Auto-Debugging",
+          "type": "Supporting",
+          "function": "Skin conditioning",
+          "description": "Auto-Debugging is a key component of Cursor AI Editor formulation.",
+          "benefits": "Overall skin health"
+        },
+        {
+          "name": "Codebase Chat",
+          "type": "Supporting",
+          "function": "Skin conditioning",
+          "description": "Codebase Chat is a key component of Cursor AI Editor formulation.",
+          "benefits": "Overall skin health"
+        }
+      ],
+      "ingredient_count": 3,
+      "highlight_ingredient": "Natural Language Code Generation",
+      "concentration": "GPT-4 & Claude 3.5 Integration"
+    },
+    "benefits": {
+      "primary_benefits": [
+        "Writes code 3x faster",
+        "Explains complex logic instantly"
+      ],
+      "detailed_benefits": [
+        {
+          "benefit": "Writes code 3x faster",
+          "description": "Cursor AI Editor delivers writes code 3x faster benefits for improved skin health."
+        },
+        {
+          "benefit": "Explains complex logic instantly",
+          "description": "Cursor AI Editor delivers explains complex logic instantly benefits for improved skin health."
+        }
+      ],
+      "benefit_categories": {
+        "other": [
+          "Writes code 3x faster",
+          "Explains complex logic instantly"
+        ]
+      },
+      "total_benefits": 2
+    },
+    "how_to_use": {
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Prepare",
+          "description": "Cleanse and dry your face"
+        },
+        {
+          "step_number": 2,
+          "action": "Apply",
+          "description": "Highlight code to refactor or press Ctrl+K to generate from text prompts"
+        }
+      ],
+      "frequency": "As directed",
+      "best_time": "Morning or Evening",
+      "tips": [
+        "Consistency is key for best results"
+      ],
+      "warnings": [
+        "Occasional hallucinations in complex logic"
+      ],
+      "raw_instructions": "Highlight code to refactor or press Ctrl+K to generate from text prompts"
+    },
+    "suitable_for": [
+      "Developers",
+      "AI Engineers"
+    ],
+    "safety_information": {
+      "side_effects": [
+        "Occasional hallucinations in complex logic"
+      ],
+      "precautions": [
+        "Perform a patch test before first use",
+        "Discontinue use if irritation occurs",
+        "For external use only"
+      ],
+      "suitability": {
+        "suitable_for": [
+          "Developers",
+          "AI Engineers"
+        ],
+        "use_with_caution": [],
+        "not_suitable_for": [],
+        "all_skin_types": false
+      },
+      "contraindications": [
+        "Open wounds or broken skin",
+        "Known allergy to any ingredient"
+      ],
+      "storage": [
+        "Store at room temperature",
+        "Keep away from direct sunlight",
+        "Keep out of reach of children"
+      ],
+      "overall_safety_rating": "Safe for recommended use"
+    },
+    "price": {
+      "amount": "Free (Pro plan: $20/month)",
+      "currency": "USD"
+    }
+  },
+  "metadata": {
+    "generated_at": "2025-12-10T17:35:30.704810",
+    "agent": "output_agent",
+    "version": "1.0",
+    "logic_blocks_used": [
+      "benefits_block",
+      "usage_block",
+      "ingredients_block",
+      "safety_block"
+    ]
+  }
+}

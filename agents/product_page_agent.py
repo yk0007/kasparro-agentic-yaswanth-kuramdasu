@@ -1,0 +1,206 @@
+"""
+Product Page Agent.
+
+Responsible for creating comprehensive product page content.
+Single responsibility: Build complete product page using logic blocks.
+"""
+
+import logging
+from typing import Dict, Any, Tuple, List
+
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from models import ProductModel
+from config import invoke_with_retry
+from logic_blocks import (
+    generate_benefits_block,
+    generate_usage_block,
+    generate_ingredients_block,
+    generate_safety_block
+)
+
+
+logger = logging.getLogger(__name__)
+
+
+class ProductPageAgent:
+    """
+    Agent responsible for creating product page content.
+    
+    Builds a comprehensive product page using all relevant logic blocks.
+    The page includes product description, features, benefits, ingredients,
+    usage instructions, and safety information.
+    
+    Attributes:
+        name: Agent identifier
+    """
+    
+    name: str = "product_page_agent"
+    
+    def __init__(self):
+        """Initialize the Product Page Agent."""
+        logger.info(f"Initialized {self.name}")
+    
+    def execute(self, product: ProductModel) -> Tuple[Dict[str, Any], List[str]]:
+        """
+        Create product page content.
+        
+        Uses all logic blocks to build a comprehensive product page
+        with enriched content.
+        
+        Args:
+            product: Validated ProductModel
+            
+        Returns:
+            Tuple of (product page content dict, list of errors)
+        """
+        logger.info(f"{self.name}: Creating product page for {product.name}")
+        errors: List[str] = []
+        
+        try:
+            # Generate all logic blocks
+            blocks = self._generate_all_blocks(product)
+            logger.info(f"{self.name}: Generated {len(blocks)} logic blocks")
+            
+            # Generate enhanced descriptions using LLM
+            tagline = self._generate_tagline(product)
+            headline = self._generate_headline(product)
+            description = self._generate_description(product, blocks)
+            
+            # Build product page structure
+            product_content = {
+                "product": {
+                    "name": product.name,
+                    "tagline": tagline,
+                    "headline": headline,
+                    "description": description,
+                    "concentration": product.concentration,
+                    
+                    "key_features": self._build_key_features(product, blocks),
+                    
+                    "ingredients": blocks["ingredients_block"],
+                    "benefits": blocks["benefits_block"],
+                    "how_to_use": blocks["usage_block"],
+                    
+                    "suitable_for": product.skin_type,
+                    
+                    "safety_information": blocks["safety_block"],
+                    
+                    "price": {
+                        "amount": product.price,
+                        "currency": "INR" if "₹" in product.price else "USD"
+                    }
+                },
+                "blocks": blocks
+            }
+            
+            logger.info(f"{self.name}: Product page created successfully")
+            return product_content, errors
+            
+        except Exception as e:
+            error = f"Error creating product page: {str(e)}"
+            logger.error(f"{self.name}: {error}")
+            errors.append(error)
+            return {}, errors
+    
+    def _generate_all_blocks(self, product: ProductModel) -> Dict[str, Any]:
+        """Generate all logic blocks for the product page."""
+        logger.debug(f"{self.name}: Generating logic blocks")
+        
+        return {
+            "benefits_block": generate_benefits_block(product),
+            "usage_block": generate_usage_block(product),
+            "ingredients_block": generate_ingredients_block(product),
+            "safety_block": generate_safety_block(product)
+        }
+    
+    def _generate_tagline(self, product: ProductModel) -> str:
+        """Generate a catchy tagline for the product."""
+        try:
+            prompt = f"""Create a short, catchy tagline (max 10 words) for this product:
+Product: {product.name}
+Key Benefits: {', '.join(product.benefits)}
+Key Ingredient: {product.key_ingredients[0] if product.key_ingredients else 'premium ingredients'}
+
+Output only the tagline text, nothing else."""
+            
+            tagline = invoke_with_retry(prompt).strip().strip('"')
+            return tagline
+            
+        except Exception as e:
+            logger.warning(f"{self.name}: Failed to generate tagline: {e}")
+            return f"Unlock radiant skin with {product.concentration}"
+    
+    def _generate_headline(self, product: ProductModel) -> str:
+        """Generate a headline for the product page."""
+        try:
+            prompt = f"""Create a compelling headline (max 15 words) for this product page:
+Product: {product.name}
+Concentration: {product.concentration}
+Main Benefit: {product.benefits[0] if product.benefits else 'skin health'}
+
+Output only the headline text, nothing else."""
+            
+            headline = invoke_with_retry(prompt).strip().strip('"')
+            return headline
+            
+        except Exception as e:
+            logger.warning(f"{self.name}: Failed to generate headline: {e}")
+            return f"{product.name} - Your Path to {product.benefits[0] if product.benefits else 'Radiant'} Skin"
+    
+    def _generate_description(
+        self, 
+        product: ProductModel, 
+        blocks: Dict[str, Any]
+    ) -> str:
+        """Generate a comprehensive product description."""
+        try:
+            benefits_info = blocks["benefits_block"]
+            ingredients_info = blocks["ingredients_block"]
+            
+            prompt = f"""Write a compelling product description (3-4 sentences) for:
+Product: {product.name}
+Concentration: {product.concentration}
+Key Ingredients: {', '.join(product.key_ingredients)}
+Benefits: {benefits_info.get('primary_benefits', product.benefits)}
+Suitable For: {', '.join(product.skin_type)} skin
+
+Focus on benefits and what makes this product special. Be enthusiastic but factual.
+Output only the description text, nothing else."""
+            
+            description = invoke_with_retry(prompt).strip()
+            return description
+            
+        except Exception as e:
+            logger.warning(f"{self.name}: Failed to generate description: {e}")
+            return (f"{product.name} features {product.concentration} to deliver "
+                   f"{' and '.join(product.benefits).lower()}. "
+                   f"Formulated with {' and '.join(product.key_ingredients)}, "
+                   f"this serum is perfect for {' and '.join(product.skin_type).lower()} skin. "
+                   f"{product.how_to_use}")
+    
+    def _build_key_features(
+        self, 
+        product: ProductModel, 
+        blocks: Dict[str, Any]
+    ) -> List[str]:
+        """Build list of key features from product and blocks."""
+        features = []
+        
+        # Add concentration as feature
+        features.append(f"{product.concentration} potency")
+        
+        # Add key ingredients
+        for ingredient in product.key_ingredients[:3]:
+            features.append(f"Contains {ingredient}")
+        
+        # Add primary benefits
+        for benefit in product.benefits:
+            features.append(f"{benefit} effect")
+        
+        # Add suitability
+        features.append(f"Suitable for {' & '.join(product.skin_type)} skin")
+        
+        return features

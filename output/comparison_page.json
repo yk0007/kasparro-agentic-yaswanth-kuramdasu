@@ -1,0 +1,138 @@
+{
+  "page_type": "comparison",
+  "products": {
+    "product_a": {
+      "name": "Cursor AI Editor",
+      "concentration": "GPT-4 & Claude 3.5 Integration",
+      "key_ingredients": [
+        "Natural Language Code Generation",
+        "Auto-Debugging",
+        "Codebase Chat"
+      ],
+      "benefits": [
+        "Writes code 3x faster",
+        "Explains complex logic instantly"
+      ],
+      "skin_type": [
+        "Developers",
+        "AI Engineers"
+      ],
+      "price": "Free (Pro plan: $20/month)",
+      "how_to_use": "Highlight code to refactor or press Ctrl+K to generate from text prompts",
+      "side_effects": "Occasional hallucinations in complex logic"
+    },
+    "product_b": {
+      "name": "GitHub Copilot",
+      "concentration": "AI Pair Programmer powered by OpenAI Codex",
+      "key_ingredients": [
+        "Code Completion",
+        "Natural Language to Code",
+        "Code Explanation",
+        "Test Generation"
+      ],
+      "benefits": [
+        "Boosts developer productivity",
+        "Reduces boilerplate code",
+        "Helps understand unfamiliar codebases",
+        "Accelerates learning"
+      ],
+      "skin_type": [
+        "Developers",
+        "Software Engineers",
+        "AI Engineers"
+      ],
+      "price": "$10/month or $100/year (Free for verified students and maintainers of popular open-source projects)",
+      "how_to_use": "Install the GitHub Copilot extension in your IDE (VS Code, JetBrains IDEs, etc.). Start typing code or comments, and Copilot will suggest completions.",
+      "side_effects": "Suggestions may not always be perfect or secure. Requires an active internet connection. Potential for over-reliance can hinder learning of fundamental concepts."
+    }
+  },
+  "comparison": {
+    "ingredients": {
+      "common": [],
+      "unique_to_product_a": [
+        "Natural Language Code Generation",
+        "Auto-Debugging",
+        "Codebase Chat"
+      ],
+      "unique_to_product_b": [
+        "Natural Language to Code",
+        "Test Generation",
+        "Code Completion",
+        "Code Explanation"
+      ],
+      "total_ingredients_a": 3,
+      "total_ingredients_b": 4,
+      "overlap_percentage": 0.0,
+      "analysis": "Cursor AI Editor uniquely features: Natural Language Code Generation, Auto-Debugging, Codebase Chat. GitHub Copilot uniquely features: Natural Language to Code, Test Generation, Code Completion, Code Explanation. The products have distinct formulations with no overlapping key ingredients."
+    },
+    "benefits": {
+      "common": [],
+      "unique_to_product_a": [
+        "Writes code 3x faster",
+        "Explains complex logic instantly"
+      ],
+      "unique_to_product_b": [
+        "Boosts developer productivity",
+        "Reduces boilerplate code",
+        "Helps understand unfamiliar codebases",
+        "Accelerates learning"
+      ],
+      "advantage_product_a": [
+        "Writes code 3x faster",
+        "Explains complex logic instantly"
+      ],
+      "advantage_product_b": [
+        "Boosts developer productivity",
+        "Reduces boilerplate code",
+        "Helps understand unfamiliar codebases",
+        "Accelerates learning"
+      ],
+      "total_benefits_a": 2,
+      "total_benefits_b": 4,
+      "analysis": "Cursor AI Editor additionally provides writes code 3x faster, explains complex logic instantly. GitHub Copilot additionally offers boosts developer productivity, reduces boilerplate code, helps understand unfamiliar codebases, accelerates learning."
+    },
+    "concentration": {
+      "product_a": "GPT-4 & Claude 3.5 Integration",
+      "product_b": "AI Pair Programmer powered by OpenAI Codex",
+      "analysis": "Cursor AI Editor offers GPT-4 & Claude 3.5 Integration, while GitHub Copilot provides AI Pair Programmer powered by OpenAI Codex."
+    },
+    "price": {
+      "price_a": "Free (Pro plan: $20/month)",
+      "price_b": "$10/month or $100/year (Free for verified students and maintainers of popular open-source projects)",
+      "price_a_numeric": 0.0,
+      "price_b_numeric": 0.0,
+      "difference": "$0.0",
+      "difference_numeric": 0.0,
+      "cheaper_product": "GitHub Copilot",
+      "more_expensive_product": "Cursor AI Editor",
+      "percentage_difference": "N/A",
+      "value_analysis": "Both products are priced equally. Choice should be based on specific skin needs and ingredient preferences."
+    },
+    "suitability": {
+      "product_a_best_for": [
+        "Developers",
+        "AI Engineers"
+      ],
+      "product_b_best_for": [
+        "Developers",
+        "Software Engineers",
+        "AI Engineers"
+      ],
+      "overlap": [
+        "AI Engineers",
+        "Developers"
+      ]
+    }
+  },
+  "recommendation": "Cursor AI Editor (Free (Pro plan: $20/month)) offers Writes code 3x faster, Explains complex logic instantly. GitHub Copilot ($10/month or $100/year (Free for verified students and maintainers of popular open-source projects)) provides Boosts developer productivity, Reduces boilerplate code. Choose based on your specific needs and budget.",
+  "metadata": {
+    "generated_at": "2025-12-10T17:35:30.705774",
+    "agent": "output_agent",
+    "version": "1.0",
+    "logic_blocks_used": [
+      "compare_ingredients_block",
+      "compare_benefits_block",
+      "pricing_block"
+    ]
+  }
+}
