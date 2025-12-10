@@ -20,6 +20,23 @@ LOG_LEVEL: int = logging.INFO
 logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
+
+def get_secret(key: str, default: str = "") -> str:
+    """Get secret from Streamlit secrets or environment variable.
+    
+    This function checks st.secrets first (for Streamlit Cloud),
+    then falls back to environment variables (for local development).
+    """
+    # Try Streamlit secrets first (for Streamlit Cloud deployment)
+    try:
+        import streamlit as st
+        if hasattr(st, 'secrets') and key in st.secrets:
+            return str(st.secrets[key])
+    except Exception:
+        pass
+    # Fall back to environment variable
+    return os.getenv(key, default)
+
 # ============ LLM Provider Selection ============
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "groq")  # "gemini" or "groq"
 
@@ -182,11 +199,18 @@ def invoke_grounded(prompt: str, max_attempts: int = 3) -> str:
 
 
 def get_available_providers() -> List[str]:
-    """Get list of available LLM providers based on configured keys."""
+    """Get list of available LLM providers based on configured keys.
+    
+    Checks both environment variables and Streamlit secrets dynamically.
+    """
     providers = []
-    if GEMINI_API_KEYS:
+    # Check dynamically at runtime (important for Streamlit Cloud)
+    groq_key = get_secret("GROQ_API_KEY", "")
+    gemini_keys = get_secret("GEMINI_API_KEYS", get_secret("GOOGLE_API_KEY", ""))
+    
+    if gemini_keys.strip():
         providers.append("gemini")
-    if GROQ_API_KEY:
+    if groq_key.strip():
         providers.append("groq")
     return providers
 
