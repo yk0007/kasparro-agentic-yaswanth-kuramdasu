@@ -1,135 +1,117 @@
 {
   "page_type": "product",
   "product": {
-    "name": "Cursor AI Editor",
-    "tagline": "Code faster, smarter, with instant logic insights.",
-    "headline": "Write Code 3x Faster with AI-Powered Editor Technology",
-    "description": "Unlock unparalleled coding efficiency with the Cursor AI Editor, powered by the cutting-edge integration of GPT-4 and Claude 3.5. This revolutionary tool writes code up to 3x faster, while also explaining complex logic instantly, making it a game-changer for developers and AI engineers alike. By harnessing the power of natural language code generation, auto-debugging, and codebase chat, the Cursor AI Editor streamlines the development process, saving time and reducing frustration. With its groundbreaking capabilities, this editor is the ultimate solution for those seeking to take their coding to the next level.",
-    "product_type": "GPT-4 & Claude 3.5 Integration",
+    "name": "GlowBoost Vitamin C Serum",
+    "tagline": "Illuminate Your Glow with Vitamin C Power",
+    "headline": "Unlock Radiant Skin with 10% Vitamin C GlowBoost Serum",
+    "description": "Unlock a brighter, more even-toned complexion with GlowBoost Vitamin C Serum, harnessing the power of 10% Vitamin C to illuminate your skin. This potent serum not only brightens, but also fades dark spots, revealing a radiant glow that lasts. Infused with Hyaluronic Acid for an extra dose of hydration, GlowBoost is perfect for oily and combination skin types, providing a balanced and effective solution for a more vibrant you. By combining these key ingredients, GlowBoost delivers unparalleled brightening benefits, giving you the confidence to glow from within.",
+    "product_type": "10% Vitamin C",
     "key_features": [
-      "GPT-4 & Claude 3.5 Integration",
-      "Includes Natural Language Code Generation",
-      "Includes Auto-Debugging",
-      "Includes Codebase Chat",
-      "Writes code 3x faster",
-      "Explains complex logic instantly",
-      "Designed for Developers & AI Engineers"
+      "10% Vitamin C",
+      "Includes Vitamin C",
+      "Includes Hyaluronic Acid",
+      "Brightening",
+      "Fades dark spots",
+      "Designed for Oily & Combination"
     ],
     "ingredients": {
       "key_features": [
-        "Natural Language Code Generation",
-        "Auto-Debugging",
-        "Codebase Chat"
+        "Vitamin C",
+        "Hyaluronic Acid"
       ],
       "active_ingredients": [
-        "Natural Language Code Generation",
-        "Auto-Debugging",
-        "Codebase Chat"
+        "Vitamin C",
+        "Hyaluronic Acid"
       ],
       "ingredient_details": [
         {
-          "name": "Natural Language Code Generation",
-          "description": "This feature allows users to generate code using natural language inputs, enabling them to create programming code by describing what they want to accomplish in simple, human-like language."
+          "name": "Vitamin C",
+          "description": "A potent antioxidant that helps neutralize free radicals, brighten and even out skin tone, and reduce the appearance of fine lines and wrinkles."
         },
         {
-          "name": "Auto-Debugging",
-          "description": "The Auto-Debugging feature automatically identifies and fixes errors in the code, saving users time and effort by streamlining the debugging process and reducing the likelihood of manual mistakes."
-        },
-        {
-          "name": "Codebase Chat",
-          "description": "Codebase Chat is an interactive feature that enables users to converse with their codebase, asking questions and receiving answers about specific parts of the code, making it easier to understand and navigate complex codebases."
+          "name": "Hyaluronic Acid",
+          "description": "A natural humectant that retains moisture in the skin, providing long-lasting hydration, plumping, and firming the skin for a more radiant and youthful appearance."
         }
       ],
       "feature_details": [
         {
-          "name": "Natural Language Code Generation",
-          "description": "This feature allows users to generate code using natural language inputs, enabling them to create programming code by describing what they want to accomplish in simple, human-like language."
+          "name": "Vitamin C",
+          "description": "A potent antioxidant that helps neutralize free radicals, brighten and even out skin tone, and reduce the appearance of fine lines and wrinkles."
         },
         {
-          "name": "Auto-Debugging",
-          "description": "The Auto-Debugging feature automatically identifies and fixes errors in the code, saving users time and effort by streamlining the debugging process and reducing the likelihood of manual mistakes."
-        },
-        {
-          "name": "Codebase Chat",
-          "description": "Codebase Chat is an interactive feature that enables users to converse with their codebase, asking questions and receiving answers about specific parts of the code, making it easier to understand and navigate complex codebases."
+          "name": "Hyaluronic Acid",
+          "description": "A natural humectant that retains moisture in the skin, providing long-lasting hydration, plumping, and firming the skin for a more radiant and youthful appearance."
         }
       ],
-      "ingredient_count": 3,
-      "highlight_feature": "Natural Language Code Generation",
-      "highlight_ingredient": "Natural Language Code Generation",
-      "product_type": "GPT-4 & Claude 3.5 Integration"
+      "ingredient_count": 2,
+      "highlight_feature": "Vitamin C",
+      "highlight_ingredient": "Vitamin C",
+      "product_type": "10% Vitamin C"
     },
     "benefits": {
       "primary_benefits": [
-        "Writes code 3x faster",
-        "Explains complex logic instantly"
+        "Brightening",
+        "Fades dark spots"
       ],
       "detailed_benefits": [
         {
-          "benefit": "Writes code 3x faster",
-          "description": "The Cursor AI Editor enables developers to significantly increase their coding speed, allowing them to write code up to three times faster than traditional methods, thereby improving overall productivity and efficiency."
+          "benefit": "Brightening",
+          "description": "GlowBoost Vitamin C Serum helps to even out skin tone and gives your skin a radiant glow, making it look brighter and more vibrant."
         },
         {
-          "benefit": "Explains complex logic instantly",
-          "description": "The Cursor AI Editor provides instant explanations for complex logic, making it easier for developers to understand and work with intricate code, reducing the time and effort required to debug and maintain their projects."
+          "benefit": "Fades dark spots",
+          "description": "This serum effectively reduces the appearance of dark spots and hyperpigmentation, leaving your skin with a more uniform and smoother complexion."
         }
       ],
       "total_benefits": 2
     },
     "how_to_use": {
-      "raw_instructions": "Highlight code to refactor or press Ctrl+K to generate from text prompts",
-      "summary": "Highlight code to refactor or press Ctrl+K to generate from text prompts",
+      "raw_instructions": "Apply 2–3 drops in the morning before sunscreen",
+      "summary": "Apply 2–3 drops in the morning before sunscreen",
       "expanded_instructions": {
         "steps": [
-          "Highlight the code you want to refactor in the editor",
-          "Press Ctrl+K to generate code from text prompts or right-click on the highlighted code to initiate refactoring"
+          "Apply 2-3 drops of GlowBoost Vitamin C Serum to your face and neck in the morning",
+          "Gently massage the serum into your skin until fully absorbed"
         ],
         "tips": [
-          "Use specific and concise text prompts for better code generation results",
-          "Regularly review and test the generated code to ensure accuracy and functionality"
+          "Use before applying sunscreen for optimal results"
         ],
         "frequency": "daily"
       },
-      "product_name": "Cursor AI Editor"
+      "product_name": "GlowBoost Vitamin C Serum"
     },
     "suitable_for": [
-      "Developers",
-      "AI Engineers"
+      "Oily",
+      "Combination"
     ],
     "safety_information": {
-      "considerations": "Occasional hallucinations in complex logic",
+      "considerations": "Mild tingling for sensitive skin",
       "target_users": [
-        "Developers",
-        "AI Engineers"
+        "Oily",
+        "Combination"
       ],
       "suitable_for": [
-        "Developers",
-        "AI Engineers"
+        "Oily",
+        "Combination"
       ],
       "expanded_safety": {
         "precautions": [
-          "Use the Cursor AI Editor in a well-ventilated area, away from direct sunlight and moisture",
-          "Avoid using the Cursor AI Editor for extended periods without taking regular breaks to reduce eye strain and mental fatigue",
-          "Be cautious when working with complex logic, as occasional hallucinations may occur, leading to unexpected results or errors",
-          "Regularly review and test your work to ensure accuracy and validity",
-          "Keep the Cursor AI Editor software up to date to ensure you have the latest security patches and features"
+          "Perform a patch test before using GlowBoost Vitamin C Serum, especially if you have sensitive skin, as it may cause mild tingling. Start with a small amount and gradually increase as your skin becomes more tolerant. Avoid applying the serum on broken or irritated skin."
         ],
         "who_should_avoid": [
-          "Individuals with a history of photosensitive epilepsy or other conditions that may be triggered by screen flicker or other visual effects",
-          "Those who are prone to eye strain or have pre-existing vision problems",
-          "Users who are not experienced in working with AI or complex logic, as they may be more susceptible to errors or hallucinations"
+          "Individuals with extremely sensitive skin, those with open wounds or skin irritation, and people who are allergic to vitamin C or any other ingredients in the serum"
         ],
-        "storage": "Store the Cursor AI Editor software and related files in a secure, password-protected environment, with regular backups to prevent data loss in case of system failure or other unforeseen events"
+        "storage": "Store GlowBoost Vitamin C Serum in a cool, dry place, away from direct sunlight and heat sources, to maintain its potency and effectiveness."
       },
-      "product_name": "Cursor AI Editor"
+      "product_name": "GlowBoost Vitamin C Serum"
     },
     "price": {
-      "amount": "Free (Pro plan: $20/month)",
-      "currency": "USD"
+      "amount": "₹699",
+      "currency": "INR"
     }
   },
   "metadata": {
-    "generated_at": "2025-12-10T19:48:24.194249",
+    "generated_at": "2025-12-10T20:30:54.005692",
     "agent": "output_agent",
     "version": "1.0",
     "logic_blocks_used": [
