@@ -111,12 +111,14 @@ def _get_groq_llm():
     """Get Groq LLM instance."""
     from langchain_groq import ChatGroq
     
-    if not GROQ_API_KEY:
-        raise ValueError("GROQ_API_KEY not set in .env file")
+    # Get API key dynamically (supports both .env and st.secrets)
+    api_key = get_secret("GROQ_API_KEY", "")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY not set. Add to .env file or Streamlit secrets.")
     
     return ChatGroq(
         model=GROQ_MODEL,
-        groq_api_key=GROQ_API_KEY,
+        groq_api_key=api_key,
         temperature=DEFAULT_TEMPERATURE,
         max_tokens=MAX_OUTPUT_TOKENS
     )
