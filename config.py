@@ -74,10 +74,16 @@ def set_llm_provider(provider: str):
 def get_next_gemini_key() -> str:
     """Get next Gemini API key using round-robin rotation."""
     global _gemini_key_index
-    if not GEMINI_API_KEYS:
-        raise ValueError("No Gemini API keys configured")
-    key = GEMINI_API_KEYS[_gemini_key_index]
-    _gemini_key_index = (_gemini_key_index + 1) % len(GEMINI_API_KEYS)
+    
+    # Get API keys dynamically (supports both .env and st.secrets)
+    keys_str = get_secret("GEMINI_API_KEYS", get_secret("GOOGLE_API_KEY", ""))
+    keys = [k.strip() for k in keys_str.split(",") if k.strip()]
+    
+    if not keys:
+        raise ValueError("No Gemini API keys configured. Add to .env or Streamlit secrets.")
+    
+    key = keys[_gemini_key_index % len(keys)]
+    _gemini_key_index = (_gemini_key_index + 1) % len(keys)
     return key
 
 
