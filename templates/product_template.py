@@ -82,7 +82,7 @@ class ProductTemplate(BaseTemplate):
             
             # From ingredients block
             "ingredients": blocks.get("ingredients_block", {
-                "active": product_data.get("key_ingredients", []),
+                "active": product_data.get("key_features", []),
                 "details": {}
             }),
             
@@ -100,11 +100,11 @@ class ProductTemplate(BaseTemplate):
             }),
             
             # Skin type suitability
-            "suitable_for": product_data.get("skin_type", []),
+            "suitable_for": product_data.get("target_users", []),
             
             # From safety block
             "safety_information": blocks.get("safety_block", {
-                "side_effects": product_data.get("side_effects", ""),
+                "considerations": product_data.get("considerations", ""),
                 "precautions": []
             }),
             
@@ -124,13 +124,13 @@ class ProductTemplate(BaseTemplate):
         """Generate a tagline from product data."""
         benefits = product.get("benefits", [])
         if benefits:
-            return f"Unlock {benefits[0].lower()} with every drop"
-        return "Transform your skin care routine"
+            return f"Experience {benefits[0].lower()} like never before"
+        return "Discover the difference"
     
     def _generate_headline(self, product: Dict[str, Any]) -> str:
         """Generate a headline from product data."""
         name = product.get("name", "Product")
-        concentration = product.get("concentration", "")
+        concentration = product.get("product_type", "")
         if concentration:
             return f"{name} - {concentration} Power"
         return name
@@ -142,17 +142,17 @@ class ProductTemplate(BaseTemplate):
     ) -> str:
         """Generate product description from data and blocks."""
         name = product.get("name", "This product")
-        concentration = product.get("concentration", "")
+        concentration = product.get("product_type", "")
         benefits = product.get("benefits", [])
-        skin_types = product.get("skin_type", [])
+        target_users = product.get("target_users", product.get("target_users", []))
         
         parts = [f"{name}"]
         if concentration:
             parts.append(f"features {concentration}")
         if benefits:
             parts.append(f"to deliver {' and '.join(b.lower() for b in benefits)}")
-        if skin_types:
-            parts.append(f"Perfect for {' and '.join(skin_types).lower()} skin types.")
+        if target_users:
+            parts.append(f"Perfect for {' and '.join(target_users).lower()}.")
         
         return ". ".join(parts)
     
@@ -160,12 +160,12 @@ class ProductTemplate(BaseTemplate):
         """Extract key features from product data."""
         features = []
         
-        if product.get("concentration"):
-            features.append(product["concentration"])
+        if product.get("product_type"):
+            features.append(product["product_type"])
         
-        if product.get("key_ingredients"):
-            for ing in product["key_ingredients"]:
-                features.append(f"Contains {ing}")
+        if product.get("key_features"):
+            for ing in product["key_features"]:
+                features.append(f"Includes {ing}")
         
         if product.get("benefits"):
             for benefit in product["benefits"]:

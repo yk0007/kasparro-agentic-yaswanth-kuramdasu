@@ -95,30 +95,30 @@ class QuestionGeneratorAgent:
     
     def _build_prompt(self, product: ProductModel) -> str:
         """Build the prompt for question generation."""
-        return f"""Generate exactly 18 user questions about this skincare product.
+        return f"""Generate exactly 18 user questions about this product.
 The questions should be what a potential customer might ask.
 
 Product Information:
 - Name: {product.name}
-- Concentration: {product.concentration}
-- Skin Types: {', '.join(product.skin_type)}
-- Key Ingredients: {', '.join(product.key_ingredients)}
+- Type/Version: {product.product_type}
+- Target Users: {', '.join(product.target_users)}
+- Key Features: {', '.join(product.key_features)}
 - Benefits: {', '.join(product.benefits)}
 - How to Use: {product.how_to_use}
-- Side Effects: {product.side_effects}
+- Considerations: {product.considerations}
 - Price: {product.price}
 
 Generate questions in these 5 categories (at least 3 per category):
-1. Informational - About what the product is and contains
-2. Safety - About side effects, precautions, suitability
-3. Usage - About how and when to use
+1. Informational - About what the product is and what it does
+2. Safety - About limitations, considerations, suitability
+3. Usage - About how to use and get started
 4. Purchase - About price, value, availability
 5. Comparison - About how it compares to alternatives
 
 Output as JSON array with this structure:
 [
     {{"category": "Informational", "question": "What is...?"}},
-    {{"category": "Safety", "question": "Is it safe...?"}},
+    {{"category": "Safety", "question": "Are there any...?"}},
     ...
 ]
 
@@ -126,7 +126,8 @@ IMPORTANT:
 - Output ONLY the JSON array, no other text
 - Generate exactly 18 questions total
 - Make questions natural and customer-focused
-- Base questions ONLY on the provided product data"""
+- Base questions ONLY on the provided product data
+- Make questions specific to THIS product type"""
     
     def _parse_response(
         self, 
@@ -189,32 +190,32 @@ IMPORTANT:
         if needed <= 0:
             return additional
         
-        # Template questions by category
+        # Template questions by category (generic for any product type)
         templates = {
             QuestionCategory.INFORMATIONAL: [
                 f"What makes {product.name} unique?",
-                f"What ingredients are in {product.name}?",
-                f"How concentrated is the active ingredient in {product.name}?",
+                f"What are the key features of {product.name}?",
+                f"What is {product.product_type}?",
             ],
             QuestionCategory.SAFETY: [
-                f"Is {product.name} safe for sensitive skin?",
-                f"Are there any side effects of using {product.name}?",
-                f"Can I use {product.name} during pregnancy?",
+                f"Are there any limitations or considerations for {product.name}?",
+                f"What should I be aware of before using {product.name}?",
+                f"What are the potential issues with {product.name}?",
             ],
             QuestionCategory.USAGE: [
-                f"How often should I use {product.name}?",
-                f"When is the best time to apply {product.name}?",
-                f"How many drops of {product.name} should I use?",
+                f"How do I use {product.name}?",
+                f"How do I get started with {product.name}?",
+                f"What is the best way to use {product.name}?",
             ],
             QuestionCategory.PURCHASE: [
                 f"What is the price of {product.name}?",
                 f"Is {product.name} worth the price?",
-                f"Where can I buy {product.name}?",
+                f"Where can I get {product.name}?",
             ],
             QuestionCategory.COMPARISON: [
-                f"How does {product.name} compare to other vitamin C serums?",
-                f"Is {product.name} better than higher concentration alternatives?",
-                f"What's the difference between {product.name} and generic serums?",
+                f"How does {product.name} compare to alternatives?",
+                f"What makes {product.name} different from competitors?",
+                f"Is {product.name} better than similar products?",
             ],
         }
         
@@ -233,34 +234,55 @@ IMPORTANT:
         return additional[:needed]
     
     def _generate_fallback_questions(self, product: ProductModel) -> List[QuestionModel]:
-        """Generate fallback questions if LLM fails."""
-        logger.info(f"{self.name}: Generating fallback questions")
+        """Generate fallback questions using LLM if main generation fails."""
+        logger.info(f"{self.name}: Generating fallback questions via LLM")
         
-        fallback = [
-            # Informational (4)
-            (QuestionCategory.INFORMATIONAL, f"What is {product.name}?"),
-            (QuestionCategory.INFORMATIONAL, f"What are the key ingredients in {product.name}?"),
-            (QuestionCategory.INFORMATIONAL, f"What skin concerns does {product.name} address?"),
-            (QuestionCategory.INFORMATIONAL, f"What concentration of Vitamin C is in {product.name}?"),
-            # Safety (3)
-            (QuestionCategory.SAFETY, f"Is {product.name} suitable for sensitive skin?"),
-            (QuestionCategory.SAFETY, f"What are the potential side effects of {product.name}?"),
-            (QuestionCategory.SAFETY, f"Can I use {product.name} with other skincare products?"),
-            # Usage (4)
-            (QuestionCategory.USAGE, f"How do I use {product.name}?"),
-            (QuestionCategory.USAGE, f"When should I apply {product.name}?"),
-            (QuestionCategory.USAGE, f"How much product should I use per application?"),
-            (QuestionCategory.USAGE, f"Should I use sunscreen after applying {product.name}?"),
-            # Purchase (2)
-            (QuestionCategory.PURCHASE, f"What is the price of {product.name}?"),
-            (QuestionCategory.PURCHASE, f"Is {product.name} a good value for the price?"),
-            # Comparison (3)
-            (QuestionCategory.COMPARISON, f"How does {product.name} compare to similar products?"),
-            (QuestionCategory.COMPARISON, f"Is 10% Vitamin C concentration enough?"),
-            (QuestionCategory.COMPARISON, f"What makes {product.name} different from competitors?"),
-        ]
-        
-        return [
-            QuestionModel(id=f"q{i+1}", category=cat, question=q)
-            for i, (cat, q) in enumerate(fallback)
-        ]
+        try:
+            prompt = f"""Generate 15 simple user questions about "{product.name}".
+
+Product: {product.name}
+Type: {product.product_type}
+Features: {', '.join(product.key_features)}
+Benefits: {', '.join(product.benefits)}
+Price: {product.price}
+
+Categories: Informational, Safety, Usage, Purchase, Comparison (3 each)
+
+Output JSON array: [{{"category": "X", "question": "Y?"}}]
+Output ONLY valid JSON array."""
+
+            response = invoke_with_retry(prompt).strip()
+            
+            if "```" in response:
+                response = response.split("```")[1]
+                if response.startswith("json"):
+                    response = response[4:]
+            response = response.strip()
+            
+            import json
+            data = json.loads(response)
+            
+            questions = []
+            for i, item in enumerate(data):
+                cat = item.get("category", "Informational")
+                q = item.get("question", "")
+                if q:
+                    try:
+                        category = QuestionCategory[cat.upper()]
+                    except KeyError:
+                        category = QuestionCategory.INFORMATIONAL
+                    questions.append(QuestionModel(id=f"q{i+1}", category=category, question=q))
+            
+            return questions[:15]
+            
+        except Exception as e:
+            logger.warning(f"{self.name}: LLM fallback failed: {e}, using minimal questions")
+            # Absolute minimal fallback
+            return [
+                QuestionModel(id="q1", category=QuestionCategory.INFORMATIONAL, question=f"What is {product.name}?"),
+                QuestionModel(id="q2", category=QuestionCategory.INFORMATIONAL, question=f"What does {product.name} do?"),
+                QuestionModel(id="q3", category=QuestionCategory.USAGE, question=f"How do I use {product.name}?"),
+                QuestionModel(id="q4", category=QuestionCategory.PURCHASE, question=f"What is the price of {product.name}?"),
+                QuestionModel(id="q5", category=QuestionCategory.SAFETY, question=f"Are there any issues with {product.name}?"),
+            ]
+

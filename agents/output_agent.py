@@ -159,7 +159,7 @@ class OutputAgent:
                 "tagline": product_data.get("tagline", ""),
                 "headline": product_data.get("headline", ""),
                 "description": product_data.get("description", ""),
-                "concentration": product_data.get("concentration", ""),
+                "product_type": product_data.get("product_type", ""),
                 "key_features": product_data.get("key_features", []),
                 "ingredients": product_data.get("ingredients", {}),
                 "benefits": product_data.get("benefits", {}),

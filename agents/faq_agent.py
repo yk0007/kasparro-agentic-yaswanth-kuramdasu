@@ -208,24 +208,29 @@ class FAQAgent:
         relevant_data: Dict[str, Any]
     ) -> str:
         """Build prompt for answer generation."""
-        return f"""Answer this customer question about a skincare product.
+        return f"""Answer this customer question about a product.
 Use ONLY the provided product information. Be concise but helpful.
 
 Product: {product.name}
-Concentration: {product.concentration}  
-Key Ingredients: {', '.join(product.key_ingredients)}
+Type/Version: {product.product_type}  
+Key Features: {', '.join(product.key_features)}
 Benefits: {', '.join(product.benefits)}
 How to Use: {product.how_to_use}
-Side Effects: {product.side_effects}
+Considerations: {product.considerations}
 Price: {product.price}
-Suitable For: {', '.join(product.skin_type)} skin
+Target Users: {', '.join(product.target_users)}
 
 Additional Context:
 {json.dumps(relevant_data, indent=2)}
 
 Question: {question.question}
 
-Provide a helpful, accurate answer in 2-4 sentences. Do not add information beyond what's provided.
+Provide a helpful, accurate answer in 1-2 sentences. Be direct and straight to the point. Do not add information beyond what's provided.
+IMPORTANT: Adapt terminology to the product type:
+- Tech products: use "features", "specifications", "capabilities"
+- Food products: use "ingredients", "nutrition", "recipe"
+- Fashion products: use "materials", "style", "design"
+- Beauty products: use "ingredients", "skin benefits"
 Output only the answer text, no formatting or prefixes."""
     
     def _fallback_answer(self, product: ProductModel, question: QuestionModel) -> str:
@@ -233,21 +238,22 @@ Output only the answer text, no formatting or prefixes."""
         category = question.category
         
         if category == QuestionCategory.INFORMATIONAL:
-            return (f"{product.name} is a skincare serum with {product.concentration} "
+            return (f"{product.name} is a {product.product_type} product "
                    f"that delivers {', '.join(product.benefits).lower()}. "
-                   f"Key ingredients include {', '.join(product.key_ingredients)}.")
+                   f"Key features include {', '.join(product.key_features)}.")
         elif category == QuestionCategory.SAFETY:
-            return (f"{product.side_effects}. This product is formulated for "
-                   f"{', '.join(product.skin_type).lower()} skin types. "
-                   f"Always do a patch test before full application.")
+            return (f"{product.considerations}. This product is designed for "
+                   f"{', '.join(product.target_users).lower()}. "
+                   f"Please review the considerations before use.")
         elif category == QuestionCategory.USAGE:
             return (f"{product.how_to_use}. For best results, "
-                   f"use consistently as part of your skincare routine.")
+                   f"follow the recommended usage guidelines.")
         elif category == QuestionCategory.PURCHASE:
             return (f"{product.name} is priced at {product.price}. "
                    f"It offers {', '.join(product.benefits).lower()} benefits "
-                   f"at an accessible price point.")
+                   f"at this price point.")
         else:  # COMPARISON
-            return (f"{product.name} features {product.concentration} with "
-                   f"{', '.join(product.key_ingredients)}. "
-                   f"It's designed for {', '.join(product.skin_type).lower()} skin types.")
+            return (f"{product.name} features {product.product_type} with "
+                   f"{', '.join(product.key_features)}. "
+                   f"It's designed for {', '.join(product.target_users).lower()}.")
+

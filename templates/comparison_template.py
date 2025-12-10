@@ -53,11 +53,11 @@ class ComparisonTemplate(BaseTemplate):
             # Validate Product B structure (fictional product)
             if "product_b" in products:
                 product_b = products["product_b"]
-                required_b_fields = ["name", "concentration", "key_ingredients", "benefits", "price"]
+                required_b_fields = ["name", "benefits", "price"]
                 for field in required_b_fields:
                     if field not in product_b or not product_b.get(field):
-                        self._errors.append(
-                            f"Product B must have '{field}' field (fictional but structured)"
+                        self._warnings.append(
+                            f"Product B should have '{field}' field"
                         )
         
         if "comparison" in data:
@@ -68,7 +68,7 @@ class ComparisonTemplate(BaseTemplate):
                 return
             
             # Check comparison has required sections
-            recommended_sections = ["ingredients", "benefits", "price"]
+            recommended_sections = ["features", "benefits", "price"]
             for section in recommended_sections:
                 if section not in comparison:
                     self._warnings.append(
@@ -131,10 +131,10 @@ class ComparisonTemplate(BaseTemplate):
         """
         return {
             "name": product.get("name", "Unknown Product"),
-            "concentration": product.get("concentration", ""),
-            "key_ingredients": product.get("key_ingredients", []),
+            "type": product.get("product_type", ""),
+            "key_features": product.get("key_features", product.get("key_features", [])),
             "benefits": product.get("benefits", []),
-            "skin_type": product.get("skin_type", []),
+            "target_users": product.get("target_users", product.get("target_users", [])),
             "price": product.get("price", "")
         }
     
@@ -156,11 +156,11 @@ class ComparisonTemplate(BaseTemplate):
         base_comparison = data.get("comparison", {})
         
         return {
-            "ingredients": blocks.get("compare_ingredients_block", 
-                base_comparison.get("ingredients", {})),
+            "features": blocks.get("compare_ingredients_block", 
+                base_comparison.get("ingredients", base_comparison.get("features", {}))),
             "benefits": blocks.get("compare_benefits_block", 
                 base_comparison.get("benefits", {})),
-            "concentration": base_comparison.get("concentration", {
+            "type": base_comparison.get("product_type", {
                 "product_a": "",
                 "product_b": "",
                 "analysis": ""
@@ -195,7 +195,7 @@ class ComparisonTemplate(BaseTemplate):
         cheaper = price_info.get("cheaper_product", product_a.get("name"))
         
         return (
-            f"Choose {product_a.get('name')} for value and proven brightening benefits. "
-            f"Consider {product_b.get('name')} if seeking higher concentration or additional "
-            f"anti-aging properties. Both products are effective for their intended purposes."
+            f"Choose {product_a.get('name')} for value and proven benefits. "
+            f"Consider {product_b.get('name')} for alternative features. "
+            f"Both products serve their intended purposes effectively."
         )

@@ -24,18 +24,18 @@ logger = logging.getLogger(__name__)
 FIELD_MAPPINGS = {
     # name alternatives
     "name": ["name", "product_name", "title", "product_title"],
-    # concentration alternatives  
-    "concentration": ["concentration", "strength", "potency", "formula"],
-    # skin_type alternatives
-    "skin_type": ["skin_type", "skin_types", "user_type", "target_audience", "suitable_for", "for"],
-    # key_ingredients alternatives
-    "key_ingredients": ["key_ingredients", "ingredients", "key_features", "features", "active_ingredients"],
+    # product_type alternatives  
+    "product_type": ["product_type", "concentration", "type", "version", "strength", "potency", "formula"],
+    # target_users alternatives
+    "target_users": ["target_users", "skin_type", "skin_types", "user_type", "target_audience", "suitable_for", "for"],
+    # key_features alternatives
+    "key_features": ["key_features", "key_ingredients", "ingredients", "features", "active_ingredients"],
     # benefits alternatives
     "benefits": ["benefits", "advantages", "key_benefits", "pros"],
     # how_to_use alternatives
     "how_to_use": ["how_to_use", "usage", "instructions", "how_to", "directions"],
-    # side_effects alternatives
-    "side_effects": ["side_effects", "warnings", "cautions", "notes", "limitations"],
+    # considerations alternatives
+    "considerations": ["considerations", "side_effects", "warnings", "cautions", "notes", "limitations"],
     # price alternatives
     "price": ["price", "cost", "pricing", "amount"],
 }
@@ -78,7 +78,7 @@ class ParserAgent:
                 if alt in data and alt not in used_keys:
                     value = data[alt]
                     # Convert string to list for list fields
-                    if standard_name in ["skin_type", "key_ingredients", "benefits"]:
+                    if standard_name in ["target_users", "key_features", "benefits"]:
                         if isinstance(value, str):
                             value = [v.strip() for v in value.split(",")]
                     mapped[standard_name] = value
@@ -96,12 +96,12 @@ class ParserAgent:
         """Apply default values for missing required fields."""
         defaults = {
             "name": data.get("product_name", "Product"),
-            "concentration": "Standard",
-            "skin_type": ["All"],
-            "key_ingredients": data.get("key_features", ["Premium ingredients"]),
+            "product_type": "Standard",
+            "target_users": ["All"],
+            "key_features": data.get("key_features", ["Premium ingredients"]),
             "benefits": ["Quality product"],
             "how_to_use": "Use as directed",
-            "side_effects": "None known",
+            "considerations": "None known",
             "price": "Contact for pricing",
         }
         

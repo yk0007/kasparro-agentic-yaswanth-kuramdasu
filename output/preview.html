@@ -7,66 +7,73 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #fff; color: #111; line-height: 1.6; }
+        body { font-family: 'Inter', sans-serif; background: #fff; color: #111; line-height: 1.7; }
         
         /* Hero */
-        .hero { padding: 100px 20px; text-align: center; background: #f8f9fa; }
-        .hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 16px; }
-        .hero .desc { color: #666; font-size: 1.2rem; max-width: 600px; margin: 0 auto 24px; }
-        .hero .price { font-size: 2rem; font-weight: 700; color: #111; }
+        .hero { padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); }
+        .hero h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px; }
+        .hero .tagline { color: #10b981; font-size: 1rem; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .hero .desc { color: #555; font-size: 1.1rem; max-width: 550px; margin: 0 auto 20px; }
+        .hero .price { font-size: 1.8rem; font-weight: 700; color: #111; }
         
         /* Container */
-        .container { max-width: 900px; margin: 0 auto; padding: 80px 20px; }
-        .section-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 32px; text-align: center; }
+        .container { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+        .section-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 28px; text-align: center; letter-spacing: -0.3px; }
         
         /* Tags */
-        .tags { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 24px 0; }
-        .tag { background: #f1f1f1; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; }
+        .tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; }
+        .tag { background: #fff; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
         
         /* Benefits */
-        .benefits ul { list-style: none; max-width: 500px; margin: 0 auto; }
-        .benefits li { padding: 16px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; }
-        .benefits li::before { content: "✓"; color: #10b981; font-weight: bold; }
+        .benefits ul { list-style: none; max-width: 650px; margin: 0 auto; }
+        .benefits li { padding: 14px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+        .benefits li strong { color: #10b981; font-weight: 600; }
         
         /* Usage */
-        .usage { background: #f8f9fa; padding: 60px 20px; text-align: center; }
-        .usage p { color: #666; max-width: 600px; margin: 0 auto; }
+        .usage { background: #f8f9fa; padding: 50px 20px; text-align: center; }
+        .usage p { color: #555; max-width: 600px; margin: 0 auto; font-size: 0.95rem; }
         
         /* Comparison */
-        .comparison { background: #111; color: #fff; padding: 80px 20px; }
+        .comparison { background: #111; color: #fff; padding: 60px 20px; }
         .comparison .section-title { color: #fff; }
-        .comp-table { max-width: 800px; margin: 0 auto; }
-        .comp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px; border-bottom: 1px solid #333; }
-        .comp-row:first-child { font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.8rem; }
-        .comp-row span { color: #10b981; font-size: 0.75rem; }
+        .comp-table { max-width: 850px; margin: 0 auto; }
+        .comp-row { display: grid; grid-template-columns: 140px 1fr 1fr; padding: 14px 8px; border-bottom: 1px solid #333; font-size: 0.9rem; }
+        .comp-row:first-child { font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .comp-row span { color: #10b981; font-size: 0.7rem; }
+        .comp-row div:first-child { color: #aaa; font-weight: 500; }
         
-        /* FAQ */
-        .faq { padding: 80px 20px; }
-        .faq-item { max-width: 700px; margin: 0 auto 24px; padding: 24px; background: #f8f9fa; border-radius: 12px; }
-        .faq-q { font-weight: 600; margin-bottom: 8px; }
-        .faq-a { color: #666; }
+        /* FAQ - Collapsible */
+        .faq { padding: 60px 20px; background: #fafafa; }
+        .faq-item { max-width: 700px; margin: 0 auto 12px; background: #fff; border-radius: 10px; border: 1px solid #eee; overflow: hidden; }
+        .faq-item summary { padding: 18px 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary::after { content: "+"; font-size: 1.2rem; color: #888; }
+        .faq-item[open] summary::after { content: "−"; }
+        .faq-item[open] summary { border-bottom: 1px solid #eee; }
+        .faq-a { padding: 16px 20px; color: #555; font-size: 0.9rem; line-height: 1.6; }
         
         /* Footer */
-        footer { text-align: center; padding: 40px; color: #888; font-size: 0.85rem; }
+        footer { text-align: center; padding: 30px; color: #888; font-size: 0.8rem; }
     </style>
 </head>
 <body>
     <section class="hero">
+        <p class="tagline">GPT-4 & Claude 3.5 Integration</p>
         <h1>Cursor AI Editor</h1>
-        <p class="desc">GPT-4 & Claude 3.5 Integration</p>
+        <p class="desc">Write Code 3x Faster with AI-Powered Editor Technology</p>
         <div class="tags"><span class="tag">Natural Language Code Generation</span><span class="tag">Auto-Debugging</span><span class="tag">Codebase Chat</span></div>
         <div class="price">Free (Pro plan: $20/month)</div>
     </section>
     
     <div class="container benefits">
         <h2 class="section-title">Benefits</h2>
-        <ul><li>Writes code 3x faster</li><li>Explains complex logic instantly</li></ul>
+        <ul><li><strong>Writes code 3x faster</strong> — The Cursor AI Editor enables developers to significantly increase their coding speed, allowing them to write code up to three times faster than traditional methods, thereby improving overall productivity and efficiency.</li><li><strong>Explains complex logic instantly</strong> — The Cursor AI Editor provides instant explanations for complex logic, making it easier for developers to understand and work with intricate code, reducing the time and effort required to debug and maintain their projects.</li></ul>
     </div>
     
     <section class="usage">
         <h2 class="section-title">How to Use</h2>
-        <p>Highlight code to refactor or press Ctrl+K to generate from text prompts</p>
-        <p style="margin-top: 16px; font-size: 0.9rem;"><strong>Best for:</strong> Developers, AI Engineers</p>
+        <ol style="text-align:left;max-width:600px;margin:0 auto;"><li style="margin:8px 0;">Highlight the code you want to refactor in the editor</li><li style="margin:8px 0;">Press Ctrl+K to generate code from text prompts or right-click on the highlighted code to initiate refactoring</li></ol><p style="margin-top:16px;font-size:0.9rem;color:#888;"><strong>Pro Tips:</strong></p><ul style="text-align:left;max-width:600px;margin:0 auto;color:#888;"><li style="margin:4px 0;">Use specific and concise text prompts for better code generation results</li><li style="margin:4px 0;">Regularly review and test the generated code to ensure accuracy and functionality</li></ul>
+        <p style="margin-top: 14px; font-size: 0.85rem;"><strong>Best for:</strong> Developers, AI Engineers</p>
     </section>
     
     <section class="comparison">
@@ -75,27 +82,37 @@
             <div class="comp-row">
                 <div>Feature</div>
                 <div>Cursor AI Editor<br><span>Main</span></div>
-                <div>GitHub Copilot<br><span>Alternative</span></div>
+                <div>CodePal<br><span>Alternative</span></div>
             </div>
             <div class="comp-row">
-                <div>Type / Version</div>
+                <div>Type</div>
                 <div>GPT-4 & Claude 3.5 Integration</div>
-                <div>AI Pair Programmer powered by OpenAI Codex</div>
+                <div>AI Code Helper</div>
             </div>
             <div class="comp-row">
-                <div>Pricing</div>
+                <div>Price</div>
                 <div>Free (Pro plan: $20/month)</div>
-                <div>$10/month or $100/year (Free for verified students and maintainers of popular open-source projects)</div>
+                <div>$15/month</div>
             </div>
             <div class="comp-row">
-                <div>Target Users</div>
+                <div>Best for</div>
                 <div>Developers, AI Engineers</div>
-                <div>Developers, Software Engineers, AI Engineers</div>
+                <div>Developers, Engineers</div>
             </div>
             <div class="comp-row">
                 <div>Key Features</div>
                 <div>Natural Language Code Generation, Auto-Debugging, Codebase Chat</div>
-                <div>Code Completion, Natural Language to Code, Code Explanation</div>
+                <div>Auto Code, Debug Tool</div>
+            </div>
+            <div class="comp-row">
+                <div>Benefits</div>
+                <div>Writes code 3x faster, Explains complex logic instantly</div>
+                <div>Faster Coding, Less Errors</div>
+            </div>
+            <div class="comp-row">
+                <div>Considerations</div>
+                <div>Occasional hallucinations in complex logic</div>
+                <div>Limited support</div>
             </div>
         </div>
     </section>
@@ -103,26 +120,26 @@
     <section class="faq">
         <h2 class="section-title">FAQ</h2>
         
-        <div class="faq-item">
-            <div class="faq-q">What exactly is the Cursor AI Editor?</div>
-            <div class="faq-a">The Cursor AI Editor is a tool designed for developers and AI engineers. It integrates GPT-4 and Claude 3.5 to help you write code 3x faster and explain complex logic instantly. It features natural language code generation and auto-debugging.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">Are there any known side effects of using the Cursor AI Editor?</div>
-            <div class="faq-a">Yes, there can be occasional hallucinations in complex logic when using the Cursor AI Editor. It is recommended to perform a patch test before first use and discontinue use if irritation occurs. This product is suitable for Developers and AI Engineers.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">How do I initiate code generation from a text prompt?</div>
-            <div class="faq-a">To initiate code generation from a text prompt, press Ctrl+K. This allows you to generate code directly from your text input.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">Is the Cursor AI Editor truly free to use indefinitely?</div>
-            <div class="faq-a">The Cursor AI Editor is free to use. A Pro plan is available for $20/month.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">How does the code writing speed of Cursor AI Editor compare to manual coding?</div>
-            <div class="faq-a">Cursor AI Editor writes code 3x faster than manual coding. This benefit applies to Developers and AI Engineers.</div>
-        </div>
+        <details class="faq-item">
+            <summary class="faq-q">What is the Cursor AI Editor and how does it integrate with GPT-4 and Claude 3.5?</summary>
+            <div class="faq-a">The Cursor AI Editor is a product with key features including Natural Language Code Generation, Auto-Debugging, and Codebase Chat, and it is integrated with GPT-4 and Claude 3.5. Its capabilities allow for efficient code generation and explanation, but the specifics of the integration with GPT-4 and Claude 3.5 are not detailed beyond this.</div>
+        </details>
+        <details class="faq-item">
+            <summary class="faq-q">Are there any limitations to the Cursor AI Editor's ability to explain complex logic?</summary>
+            <div class="faq-a">The Cursor AI Editor's capability to explain complex logic has a limitation, as it may produce occasional hallucinations in complex logic. This means that while it can instantly explain complex logic, the output may not always be accurate.</div>
+        </details>
+        <details class="faq-item">
+            <summary class="faq-q">How do I get started with using the Cursor AI Editor?</summary>
+            <div class="faq-a">To get started with the Cursor AI Editor, highlight code to refactor or press Ctrl+K to generate from text prompts, and then use the AI editor to analyze and improve the highlighted code. You can also refer to the expanded instructions which include selecting code, using text prompts, and reviewing suggested changes.</div>
+        </details>
+        <details class="faq-item">
+            <summary class="faq-q">What is the difference between the free and Pro plans for the Cursor AI Editor?</summary>
+            <div class="faq-a">The difference between the free and Pro plans for the Cursor AI Editor is the price, with the free plan being at no cost and the Pro plan at $20/month. The provided information does not specify any differences in features or capabilities between the two plans.</div>
+        </details>
+        <details class="faq-item">
+            <summary class="faq-q">How does the Cursor AI Editor compare to other AI-powered code generation tools?</summary>
+            <div class="faq-a">The Cursor AI Editor stands out with its key features, including Natural Language Code Generation, Auto-Debugging, and Codebase Chat, which enable it to write code 3x faster and explain complex logic instantly. Its capabilities, such as GPT-4 and Claude 3.5 Integration, position it as a unique tool among other AI-powered code generation tools.</div>
+        </details>
     </section>
     
     <footer>

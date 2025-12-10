@@ -14,7 +14,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ProductModel
-from config import invoke_with_retry
+from config import invoke_with_retry, invoke_grounded, is_grounding_available
 from logic_blocks import (
     compare_ingredients_block,
     compare_benefits_block,
@@ -102,43 +102,50 @@ class ComparisonAgent:
         Returns:
             ProductModel for competitor Product B
         """
-        logger.debug(f"{self.name}: Generating competitor product")
+        # Adjust prompt based on grounding availability
+        if is_grounding_available():
+            research_instruction = "Use Google Search to find a REAL competitor product that exists in the market."
+        else:
+            research_instruction = "Create a realistic FICTIONAL competitor product that would compete in the same market."
         
-        prompt = f"""Based on this product, research and suggest a REAL competitor product that exists in the market.
+        prompt = f"""{research_instruction}
 
-INPUT PRODUCT:
+INPUT PRODUCT (Main Product):
 - Name: {product_a.name}
-- Category/Type: {product_a.concentration}
-- Key Features: {', '.join(product_a.key_ingredients)}
+- Type: {product_a.product_type}
+- Features: {', '.join(product_a.key_features)}
 - Benefits: {', '.join(product_a.benefits)}
-- Target Users: {', '.join(product_a.skin_type)}
+- Target: {', '.join(product_a.target_users)}
 - Price: {product_a.price}
 
-Create a realistic competitor product that:
-1. Is a REAL or realistic product that would compete in the same market
-2. Has similar but different features/capabilities
-3. Is priced competitively (can be higher or lower)
-4. Targets a similar audience
+Create a SIMPLER competitor product. IMPORTANT: Keep ALL text SHORT and CONCISE.
+- Product type: max 5 words
+- Target users: max 2 items
+- Key features: max 2 items, each max 3 words
+- Benefits: max 2 items, each max 5 words  
+- Considerations: max 10 words
+- Price: simple format
 
-Output as JSON with this exact structure:
+Output as JSON:
 {{
-    "name": "Real Competitor Product Name",
-    "concentration": "Key differentiator or version",
-    "skin_type": ["Target User 1", "Target User 2"],
-    "key_ingredients": ["Feature 1", "Feature 2", "Feature 3"],
-    "benefits": ["Benefit 1", "Benefit 2", "Benefit 3"],
-    "how_to_use": "How to use or get started",
-    "side_effects": "Limitations or considerations",
-    "price": "Pricing"
+    "name": "Short Competitor Name",
+    "product_type": "Brief type (max 5 words)",
+    "target_users": ["User 1", "User 2"],
+    "key_features": ["Feature 1", "Feature 2"],
+    "benefits": ["Benefit 1", "Benefit 2"],
+    "how_to_use": "Brief usage",
+    "considerations": "Short limitation",
+    "price": "Simple price"
 }}
 
-IMPORTANT: 
-- Research real competitors in this product category
-- Make it realistic and comparable
-- Output ONLY the JSON, no other text"""
+Output ONLY the JSON, no other text."""
 
         try:
-            raw = invoke_with_retry(prompt)
+            # Use grounded call for Gemini, regular for Groq
+            if is_grounding_available():
+                raw = invoke_grounded(prompt)
+            else:
+                raw = invoke_with_retry(prompt)
             product_b_data = self._parse_product_b_response(raw, product_a)
             return ProductModel(**product_b_data)
             
@@ -165,14 +172,14 @@ IMPORTANT:
             data = json.loads(response)
             
             # Validate required fields
-            required = ["name", "concentration", "skin_type", "key_ingredients", 
-                       "benefits", "how_to_use", "side_effects", "price"]
+            required = ["name", "product_type", "target_users", "key_features", 
+                       "benefits", "how_to_use", "considerations", "price"]
             for field in required:
                 if field not in data:
                     raise ValueError(f"Missing field: {field}")
             
             # Ensure lists are lists
-            for list_field in ["skin_type", "key_ingredients", "benefits"]:
+            for list_field in ["target_users", "key_features", "benefits"]:
                 if isinstance(data[list_field], str):
                     data[list_field] = [x.strip() for x in data[list_field].split(",")]
             
@@ -191,12 +198,12 @@ IMPORTANT:
         # Create a generic competitor based on input product
         return {
             "name": f"Alternative to {product_a.name}",
-            "concentration": f"Premium {product_a.concentration}",
-            "skin_type": product_a.skin_type,
-            "key_ingredients": product_a.key_ingredients[:2] + ["Enhanced Features"],
+            "product_type": f"Premium {product_a.product_type}",
+            "target_users": product_a.target_users,
+            "key_features": product_a.key_features[:2] + ["Enhanced Features"],
             "benefits": product_a.benefits[:2] + ["Premium Support"],
             "how_to_use": product_a.how_to_use,
-            "side_effects": "Similar considerations apply",
+            "considerations": "Similar considerations apply",
             "price": "Premium pricing"
         }
     
@@ -224,16 +231,16 @@ IMPORTANT:
         return {
             "ingredients": blocks["compare_ingredients_block"],
             "benefits": blocks["compare_benefits_block"],
-            "concentration": {
-                "product_a": product_a.concentration,
-                "product_b": product_b.concentration,
-                "analysis": f"{product_a.name} offers {product_a.concentration}, while {product_b.name} provides {product_b.concentration}."
+            "product_type": {
+                "product_a": product_a.product_type,
+                "product_b": product_b.product_type,
+                "analysis": f"{product_a.name} offers {product_a.product_type}, while {product_b.name} provides {product_b.product_type}."
             },
             "price": blocks["pricing_block"],
             "suitability": {
-                "product_a_best_for": product_a.skin_type,
-                "product_b_best_for": product_b.skin_type,
-                "overlap": list(set(product_a.skin_type) & set(product_b.skin_type))
+                "product_a_best_for": product_a.target_users,
+                "product_b_best_for": product_b.target_users,
+                "overlap": list(set(product_a.target_users) & set(product_b.target_users))
             }
         }
     
@@ -252,11 +259,11 @@ IMPORTANT:
         """Convert ProductModel to serializable dict."""
         return {
             "name": product.name,
-            "concentration": product.concentration,
-            "key_ingredients": product.key_ingredients,
+            "product_type": product.product_type,
+            "key_features": product.key_features,
             "benefits": product.benefits,
-            "skin_type": product.skin_type,
+            "target_users": product.target_users,
             "price": product.price,
             "how_to_use": product.how_to_use,
-            "side_effects": product.side_effects
+            "considerations": product.considerations
         }

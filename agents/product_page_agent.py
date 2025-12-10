@@ -76,7 +76,7 @@ class ProductPageAgent:
                     "tagline": tagline,
                     "headline": headline,
                     "description": description,
-                    "concentration": product.concentration,
+                    "product_type": product.product_type,
                     
                     "key_features": self._build_key_features(product, blocks),
                     
@@ -84,7 +84,7 @@ class ProductPageAgent:
                     "benefits": blocks["benefits_block"],
                     "how_to_use": blocks["usage_block"],
                     
-                    "suitable_for": product.skin_type,
+                    "suitable_for": product.target_users,
                     
                     "safety_information": blocks["safety_block"],
                     
@@ -122,7 +122,7 @@ class ProductPageAgent:
             prompt = f"""Create a short, catchy tagline (max 10 words) for this product:
 Product: {product.name}
 Key Benefits: {', '.join(product.benefits)}
-Key Ingredient: {product.key_ingredients[0] if product.key_ingredients else 'premium ingredients'}
+Key Feature: {product.key_features[0] if product.key_features else 'premium quality'}
 
 Output only the tagline text, nothing else."""
             
@@ -131,15 +131,15 @@ Output only the tagline text, nothing else."""
             
         except Exception as e:
             logger.warning(f"{self.name}: Failed to generate tagline: {e}")
-            return f"Unlock radiant skin with {product.concentration}"
+            return f"Experience {product.product_type} excellence"
     
     def _generate_headline(self, product: ProductModel) -> str:
         """Generate a headline for the product page."""
         try:
             prompt = f"""Create a compelling headline (max 15 words) for this product page:
 Product: {product.name}
-Concentration: {product.concentration}
-Main Benefit: {product.benefits[0] if product.benefits else 'skin health'}
+Type: {product.product_type}
+Main Benefit: {product.benefits[0] if product.benefits else 'quality'}
 
 Output only the headline text, nothing else."""
             
@@ -148,7 +148,7 @@ Output only the headline text, nothing else."""
             
         except Exception as e:
             logger.warning(f"{self.name}: Failed to generate headline: {e}")
-            return f"{product.name} - Your Path to {product.benefits[0] if product.benefits else 'Radiant'} Skin"
+            return f"{product.name} - Your Path to {product.benefits[0] if product.benefits else 'Excellence'}"
     
     def _generate_description(
         self, 
@@ -162,10 +162,10 @@ Output only the headline text, nothing else."""
             
             prompt = f"""Write a compelling product description (3-4 sentences) for:
 Product: {product.name}
-Concentration: {product.concentration}
-Key Ingredients: {', '.join(product.key_ingredients)}
+Concentration: {product.product_type}
+Key Ingredients: {', '.join(product.key_features)}
 Benefits: {benefits_info.get('primary_benefits', product.benefits)}
-Suitable For: {', '.join(product.skin_type)} skin
+Suitable For: {', '.join(product.target_users)}
 
 Focus on benefits and what makes this product special. Be enthusiastic but factual.
 Output only the description text, nothing else."""
@@ -175,10 +175,10 @@ Output only the description text, nothing else."""
             
         except Exception as e:
             logger.warning(f"{self.name}: Failed to generate description: {e}")
-            return (f"{product.name} features {product.concentration} to deliver "
+            return (f"{product.name} features {product.product_type} to deliver "
                    f"{' and '.join(product.benefits).lower()}. "
-                   f"Formulated with {' and '.join(product.key_ingredients)}, "
-                   f"this serum is perfect for {' and '.join(product.skin_type).lower()} skin. "
+                   f"Built with {' and '.join(product.key_features)}, "
+                   f"this product is perfect for {' and '.join(product.target_users).lower()}. "
                    f"{product.how_to_use}")
     
     def _build_key_features(
@@ -190,17 +190,17 @@ Output only the description text, nothing else."""
         features = []
         
         # Add concentration as feature
-        features.append(f"{product.concentration} potency")
+        features.append(f"{product.product_type}")
         
-        # Add key ingredients
-        for ingredient in product.key_ingredients[:3]:
-            features.append(f"Contains {ingredient}")
+        # Add key features
+        for feature in product.key_features[:3]:
+            features.append(f"Includes {feature}")
         
         # Add primary benefits
         for benefit in product.benefits:
-            features.append(f"{benefit} effect")
+            features.append(f"{benefit}")
         
         # Add suitability
-        features.append(f"Suitable for {' & '.join(product.skin_type)} skin")
+        features.append(f"Designed for {' & '.join(product.target_users)}")
         
         return features

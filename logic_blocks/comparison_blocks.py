@@ -1,49 +1,42 @@
 """
 Comparison Logic Blocks.
 
-Pure functions for comparing products and generating structured comparison content.
-Works with any product type (tech, fashion, skincare, etc.)
+Functions for comparing products using LLM.
 """
 
 from typing import Dict, List, Any
 import sys
 import os
+import re
+import logging
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ProductModel
+from config import invoke_with_retry
+
+logger = logging.getLogger(__name__)
 
 
-def compare_ingredients_block(
-    product_a: ProductModel, 
-    product_b: ProductModel
-) -> Dict[str, Any]:
-    """
-    Compare key features/ingredients between two products.
-    
-    Args:
-        product_a: First product
-        product_b: Second product
-        
-    Returns:
-        Dictionary with comparison data
-    """
-    features_a = set(product_a.key_ingredients)
-    features_b = set(product_b.key_ingredients)
+def compare_ingredients_block(product_a: ProductModel, product_b: ProductModel) -> Dict[str, Any]:
+    """Compare key features between two products."""
+    features_a = set(product_a.key_features)
+    features_b = set(product_b.key_features)
     
     common = list(features_a & features_b)
     unique_a = list(features_a - features_b)
     unique_b = list(features_b - features_a)
     
-    # Generate analysis
-    parts = []
-    if common:
-        parts.append(f"Both products share: {', '.join(common)}.")
-    if unique_a:
-        parts.append(f"{product_a.name} uniquely offers: {', '.join(unique_a)}.")
-    if unique_b:
-        parts.append(f"{product_b.name} uniquely offers: {', '.join(unique_b)}.")
-    
-    analysis = " ".join(parts) if parts else "Products have different feature sets."
+    try:
+        prompt = f"""Compare features of "{product_a.name}" vs "{product_b.name}".
+{product_a.name}: {', '.join(product_a.key_features)}
+{product_b.name}: {', '.join(product_b.key_features)}
+Write a brief 2-sentence comparison. Output ONLY the text."""
+
+        analysis = invoke_with_retry(prompt).strip()
+    except Exception as e:
+        logger.warning(f"Comparison analysis failed: {e}")
+        analysis = f"Both products offer distinct features for their target users."
     
     return {
         "common": common,
@@ -55,41 +48,26 @@ def compare_ingredients_block(
     }
 
 
-def compare_benefits_block(
-    product_a: ProductModel, 
-    product_b: ProductModel
-) -> Dict[str, Any]:
-    """
-    Compare benefits between two products.
-    
-    Args:
-        product_a: First product
-        product_b: Second product
-        
-    Returns:
-        Dictionary with benefits comparison data
-    """
+def compare_benefits_block(product_a: ProductModel, product_b: ProductModel) -> Dict[str, Any]:
+    """Compare benefits between two products."""
     benefits_a = set(b.lower() for b in product_a.benefits)
     benefits_b = set(b.lower() for b in product_b.benefits)
     
     common_lower = benefits_a & benefits_b
-    unique_a_lower = benefits_a - benefits_b
-    unique_b_lower = benefits_b - benefits_a
-    
+    unique_a = [b for b in product_a.benefits if b.lower() not in common_lower]
+    unique_b = [b for b in product_b.benefits if b.lower() not in common_lower]
     common = [b for b in product_a.benefits if b.lower() in common_lower]
-    unique_a = [b for b in product_a.benefits if b.lower() in unique_a_lower]
-    unique_b = [b for b in product_b.benefits if b.lower() in unique_b_lower]
     
-    # Generate analysis
-    parts = []
-    if common:
-        parts.append(f"Both products offer: {', '.join(common)}.")
-    if unique_a:
-        parts.append(f"{product_a.name} additionally provides: {', '.join(unique_a)}.")
-    if unique_b:
-        parts.append(f"{product_b.name} additionally provides: {', '.join(unique_b)}.")
-    
-    analysis = " ".join(parts) if parts else "Both products target similar needs."
+    try:
+        prompt = f"""Compare benefits of "{product_a.name}" vs "{product_b.name}".
+{product_a.name}: {', '.join(product_a.benefits)}
+{product_b.name}: {', '.join(product_b.benefits)}
+Write a brief 2-sentence comparison. Output ONLY the text."""
+
+        analysis = invoke_with_retry(prompt).strip()
+    except Exception as e:
+        logger.warning(f"Benefits comparison failed: {e}")
+        analysis = f"Both products target similar needs with different approaches."
     
     return {
         "common": common,
@@ -103,38 +81,22 @@ def compare_benefits_block(
     }
 
 
-def generate_pricing_block(
-    product_a: ProductModel, 
-    product_b: ProductModel
-) -> Dict[str, Any]:
-    """
-    Compare pricing between two products.
-    
-    Args:
-        product_a: First product
-        product_b: Second product
-        
-    Returns:
-        Dictionary with pricing comparison data
-    """
+def generate_pricing_block(product_a: ProductModel, product_b: ProductModel) -> Dict[str, Any]:
+    """Compare pricing between two products (no LLM call)."""
     price_a = product_a.price
     price_b = product_b.price
     
-    # Extract numeric values
-    price_a_num = _extract_price_value(price_a)
-    price_b_num = _extract_price_value(price_b)
+    price_a_num = _extract_price(price_a)
+    price_b_num = _extract_price(price_b)
     
     difference = abs(price_a_num - price_b_num)
     
-    if price_a_num == 0 and price_b_num == 0:
-        cheaper = "N/A"
-        value_analysis = "Pricing comparison not available."
-    elif price_a_num <= price_b_num:
+    if price_a_num <= price_b_num:
         cheaper = product_a.name
-        value_analysis = f"{product_a.name} is more budget-friendly."
+        analysis = f"{product_a.name} is more budget-friendly."
     else:
         cheaper = product_b.name
-        value_analysis = f"{product_b.name} is more budget-friendly."
+        analysis = f"{product_b.name} is more budget-friendly."
     
     return {
         "price_a": price_a,
@@ -143,17 +105,11 @@ def generate_pricing_block(
         "price_b_numeric": price_b_num,
         "difference_numeric": difference,
         "cheaper_product": cheaper,
-        "value_analysis": value_analysis
+        "value_analysis": analysis
     }
 
 
-def _extract_price_value(price: str) -> float:
+def _extract_price(price: str) -> float:
     """Extract numeric value from price string."""
-    import re
-    numbers = re.findall(r'[\d.]+', price.replace(',', ''))
-    if numbers:
-        try:
-            return float(numbers[0])
-        except ValueError:
-            return 0.0
-    return 0.0
+    nums = re.findall(r'[\d.]+', price.replace(',', ''))
+    return float(nums[0]) if nums else 0.0

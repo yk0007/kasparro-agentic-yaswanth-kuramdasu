@@ -1,14 +1,14 @@
 """
 Configuration for Multi-Agent Content Generation System.
 
-Centralized configuration for API keys, models, and logging.
-Supports Gemini and Groq as LLM providers.
+Supports two LLM providers:
+- Gemini: Uses gemma-3-27b for content generation + gemini-flash-latest (grounded) for real competitor
+- Groq: Uses llama-3.3-70b for all tasks (fictional competitor)
 """
 
 import os
 import logging
-import random
-from typing import List, Optional
+from typing import List
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -21,13 +21,16 @@ logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 # ============ LLM Provider Selection ============
-# Can be set via environment variable or changed at runtime
-LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "gemini")  # "gemini" or "groq"
+LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "groq")  # "gemini" or "groq"
 
 # ============ Gemini Configuration ============
 GEMINI_API_KEYS_STR = os.getenv("GEMINI_API_KEYS", os.getenv("GOOGLE_API_KEY", ""))
 GEMINI_API_KEYS: List[str] = [k.strip() for k in GEMINI_API_KEYS_STR.split(",") if k.strip()]
-GEMINI_MODEL: str = "gemini-2.5-flash-lite"
+
+# Model for general content generation
+GEMINI_CONTENT_MODEL: str = "gemma-3-1b-it"
+# Model for grounded Product B generation (supports Google Search)
+GEMINI_GROUNDED_MODEL: str = "gemini-2.0-flash"
 
 # ============ Groq Configuration ============
 GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
@@ -58,30 +61,28 @@ def get_next_gemini_key() -> str:
         raise ValueError("No Gemini API keys configured")
     key = GEMINI_API_KEYS[_gemini_key_index]
     _gemini_key_index = (_gemini_key_index + 1) % len(GEMINI_API_KEYS)
-    logger.debug(f"Using Gemini key ending in: ...{key[-4:]}")
     return key
 
 
 def get_llm():
     """
-    Get a configured LLM instance based on current provider setting.
-    
-    Returns:
-        Configured LLM instance (Gemini or Groq)
+    Get a configured LLM instance for general content generation.
+    - Gemini: uses gemma-3-27b-it
+    - Groq: uses llama-3.3-70b-versatile
     """
     if LLM_PROVIDER == "groq":
         return _get_groq_llm()
     else:
-        return _get_gemini_llm()
+        return _get_gemini_content_llm()
 
 
-def _get_gemini_llm():
-    """Get Gemini LLM instance with key rotation."""
+def _get_gemini_content_llm():
+    """Get Gemini LLM for content generation (gemma-3-27b)."""
     from langchain_google_genai import ChatGoogleGenerativeAI
     
     api_key = get_next_gemini_key()
     return ChatGoogleGenerativeAI(
-        model=GEMINI_MODEL,
+        model=GEMINI_CONTENT_MODEL,
         google_api_key=api_key,
         temperature=DEFAULT_TEMPERATURE,
         max_output_tokens=MAX_OUTPUT_TOKENS,
@@ -105,23 +106,29 @@ def _get_groq_llm():
 
 
 def get_grounded_llm():
-    """Get LLM for grounded tasks (uses same as regular LLM)."""
-    return get_llm()
+    """
+    Get LLM with Google Search grounding for Product B generation.
+    Only available with Gemini provider.
+    """
+    if LLM_PROVIDER == "groq":
+        # Groq doesn't support grounding, use regular LLM
+        return _get_groq_llm()
+    
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    
+    api_key = get_next_gemini_key()
+    return ChatGoogleGenerativeAI(
+        model=GEMINI_GROUNDED_MODEL,
+        google_api_key=api_key,
+        temperature=DEFAULT_TEMPERATURE,
+        max_output_tokens=MAX_OUTPUT_TOKENS,
+        max_retries=2
+    )
 
 
 def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
     """
     Invoke LLM with automatic retry on rate limit errors.
-    
-    For Gemini: rotates API keys on rate limit.
-    For Groq: retries with delay.
-    
-    Args:
-        prompt: The prompt to send to the LLM
-        max_attempts: Maximum number of attempts
-        
-    Returns:
-        LLM response content as string
     """
     import time
     
@@ -136,15 +143,42 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
             last_error = e
             error_str = str(e).lower()
             
-            # Check if it's a rate limit error
             if "429" in str(e) or "quota" in error_str or "rate" in error_str:
                 logger.warning(f"Rate limit hit, retrying (attempt {attempt + 1}/{max_attempts})")
-                time.sleep(2)  # Pause before retry
+                time.sleep(2)
                 continue
             else:
                 raise e
     
     raise Exception(f"All attempts exhausted. Last error: {last_error}")
+
+
+def invoke_grounded(prompt: str, max_attempts: int = 3) -> str:
+    """
+    Invoke grounded LLM for Product B generation.
+    Uses Google Search grounding when Gemini is selected.
+    """
+    import time
+    
+    last_error = None
+    
+    for attempt in range(max_attempts):
+        try:
+            llm = get_grounded_llm()
+            response = llm.invoke(prompt)
+            return response.content
+        except Exception as e:
+            last_error = e
+            error_str = str(e).lower()
+            
+            if "429" in str(e) or "quota" in error_str or "rate" in error_str:
+                logger.warning(f"Rate limit hit on grounded call, retrying (attempt {attempt + 1}/{max_attempts})")
+                time.sleep(2)
+                continue
+            else:
+                raise e
+    
+    raise Exception(f"Grounded call failed. Last error: {last_error}")
 
 
 def get_available_providers() -> List[str]:
@@ -166,12 +200,17 @@ def get_current_model() -> str:
     """Get current model name based on provider."""
     if LLM_PROVIDER == "groq":
         return GROQ_MODEL
-    return GEMINI_MODEL
+    return GEMINI_CONTENT_MODEL
+
+
+def is_grounding_available() -> bool:
+    """Check if grounding is available (only with Gemini)."""
+    return LLM_PROVIDER == "gemini" and bool(GEMINI_API_KEYS)
 
 
 # Output directory
 OUTPUT_DIR: str = "output"
 
-# Backward compatibility aliases
+# Backward compatibility
 API_KEYS = GEMINI_API_KEYS
 get_next_api_key = get_next_gemini_key

@@ -171,32 +171,83 @@ def generate_ecommerce_html(
     product_b = comparison_data.get("products", {}).get("product_b", {})
     questions = faq_data.get("questions", [])
     
-    # Get product name from various sources
+    # Get product name and basic info
     name = product.get('name') or product_a.get('name') or 'Product'
-    concentration = product.get('concentration') or product_a.get('concentration') or ''
+    product_type = product.get('product_type') or product_a.get('product_type') or ''
     price = product.get('price', {}).get('amount') if isinstance(product.get('price'), dict) else product_a.get('price', '')
-    benefits = product_a.get('benefits', [])
-    features = product_a.get('key_ingredients', [])
-    target = product_a.get('skin_type', [])
-    how_to_use = product_a.get('how_to_use', '')
+    target = product.get('suitable_for', []) or product_a.get('target_users', [])
     
-    # Build benefits HTML
-    benefits_html = ''.join([f'<li>{b}</li>' for b in benefits]) if benefits else '<li>Quality product</li>'
+    # Get product description (short version)
+    description = product.get('headline') or product.get('tagline') or ''
+    if not description:
+        benefits_list = product.get('benefits', {})
+        if isinstance(benefits_list, dict):
+            primary = benefits_list.get('primary_benefits', [])
+            if primary:
+                description = ' • '.join(primary[:2])
+        elif isinstance(benefits_list, list) and benefits_list:
+            description = ' • '.join(benefits_list[:2])
     
-    # Build features HTML
-    features_html = ''.join([f'<span class="tag">{f}</span>' for f in features]) if features else ''
+    # Get LLM-enriched benefits data
+    benefits_data = product.get('benefits', {})
+    if isinstance(benefits_data, dict):
+        detailed_benefits = benefits_data.get('detailed_benefits', [])
+        benefits_html = ''
+        for item in detailed_benefits:
+            benefit = item.get('benefit', '')
+            desc = item.get('description', '')
+            benefits_html += f'<li><strong>{benefit}</strong> — {desc}</li>'
+        if not benefits_html:
+            primary = benefits_data.get('primary_benefits', [])
+            benefits_html = ''.join([f'<li>{b}</li>' for b in primary])
+    else:
+        benefits_html = ''.join([f'<li>{b}</li>' for b in benefits_data]) if benefits_data else '<li>Quality product</li>'
+    
+    # Get LLM-enriched features/ingredients data
+    ingredients_data = product.get('ingredients', {})
+    if isinstance(ingredients_data, dict):
+        feature_details = ingredients_data.get('feature_details', [])
+        features_html = ''
+        for item in feature_details:
+            features_html += f'<span class="tag">{item.get("name", "")}</span>'
+        if not features_html:
+            features = ingredients_data.get('key_features', [])
+            features_html = ''.join([f'<span class="tag">{f}</span>' for f in features])
+    else:
+        features_html = ''
+    
+    # Get LLM-enriched usage data
+    usage_data = product.get('how_to_use', {})
+    if isinstance(usage_data, dict):
+        expanded = usage_data.get('expanded_instructions', {})
+        steps = expanded.get('steps', [])
+        tips = expanded.get('tips', [])
+        if steps:
+            usage_html = '<ol style="text-align:left;max-width:600px;margin:0 auto;">'
+            for step in steps:
+                usage_html += f'<li style="margin:8px 0;">{step}</li>'
+            usage_html += '</ol>'
+            if tips:
+                usage_html += '<p style="margin-top:16px;font-size:0.9rem;color:#888;"><strong>Pro Tips:</strong></p><ul style="text-align:left;max-width:600px;margin:0 auto;color:#888;">'
+                for tip in tips:
+                    usage_html += f'<li style="margin:4px 0;">{tip}</li>'
+                usage_html += '</ul>'
+        else:
+            usage_html = f'<p>{usage_data.get("summary", "")}</p>'
+    else:
+        usage_html = f'<p>{usage_data}</p>'
     
     # Build target HTML
     target_html = ', '.join(target) if target else 'Everyone'
     
-    # Build FAQ HTML
+    # Build FAQ HTML with collapsible items
     faq_html = ''
     for q in questions[:5]:
         faq_html += f'''
-        <div class="faq-item">
-            <div class="faq-q">{q.get('question', '')}</div>
+        <details class="faq-item">
+            <summary class="faq-q">{q.get('question', '')}</summary>
             <div class="faq-a">{q.get('answer', '')}</div>
-        </div>'''
+        </details>'''
     
     html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -207,53 +258,60 @@ def generate_ecommerce_html(
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Inter', sans-serif; background: #fff; color: #111; line-height: 1.6; }}
+        body {{ font-family: 'Inter', sans-serif; background: #fff; color: #111; line-height: 1.7; }}
         
         /* Hero */
-        .hero {{ padding: 100px 20px; text-align: center; background: #f8f9fa; }}
-        .hero h1 {{ font-size: 3rem; font-weight: 700; margin-bottom: 16px; }}
-        .hero .desc {{ color: #666; font-size: 1.2rem; max-width: 600px; margin: 0 auto 24px; }}
-        .hero .price {{ font-size: 2rem; font-weight: 700; color: #111; }}
+        .hero {{ padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); }}
+        .hero h1 {{ font-size: 2.8rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px; }}
+        .hero .tagline {{ color: #10b981; font-size: 1rem; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }}
+        .hero .desc {{ color: #555; font-size: 1.1rem; max-width: 550px; margin: 0 auto 20px; }}
+        .hero .price {{ font-size: 1.8rem; font-weight: 700; color: #111; }}
         
         /* Container */
-        .container {{ max-width: 900px; margin: 0 auto; padding: 80px 20px; }}
-        .section-title {{ font-size: 1.5rem; font-weight: 600; margin-bottom: 32px; text-align: center; }}
+        .container {{ max-width: 800px; margin: 0 auto; padding: 60px 20px; }}
+        .section-title {{ font-size: 1.4rem; font-weight: 700; margin-bottom: 28px; text-align: center; letter-spacing: -0.3px; }}
         
         /* Tags */
-        .tags {{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 24px 0; }}
-        .tag {{ background: #f1f1f1; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; }}
+        .tags {{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; }}
+        .tag {{ background: #fff; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }}
         
         /* Benefits */
-        .benefits ul {{ list-style: none; max-width: 500px; margin: 0 auto; }}
-        .benefits li {{ padding: 16px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; }}
-        .benefits li::before {{ content: "✓"; color: #10b981; font-weight: bold; }}
+        .benefits ul {{ list-style: none; max-width: 650px; margin: 0 auto; }}
+        .benefits li {{ padding: 14px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; }}
+        .benefits li strong {{ color: #10b981; font-weight: 600; }}
         
         /* Usage */
-        .usage {{ background: #f8f9fa; padding: 60px 20px; text-align: center; }}
-        .usage p {{ color: #666; max-width: 600px; margin: 0 auto; }}
+        .usage {{ background: #f8f9fa; padding: 50px 20px; text-align: center; }}
+        .usage p {{ color: #555; max-width: 600px; margin: 0 auto; font-size: 0.95rem; }}
         
         /* Comparison */
-        .comparison {{ background: #111; color: #fff; padding: 80px 20px; }}
+        .comparison {{ background: #111; color: #fff; padding: 60px 20px; }}
         .comparison .section-title {{ color: #fff; }}
-        .comp-table {{ max-width: 800px; margin: 0 auto; }}
-        .comp-row {{ display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px; border-bottom: 1px solid #333; }}
-        .comp-row:first-child {{ font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.8rem; }}
-        .comp-row span {{ color: #10b981; font-size: 0.75rem; }}
+        .comp-table {{ max-width: 850px; margin: 0 auto; }}
+        .comp-row {{ display: grid; grid-template-columns: 140px 1fr 1fr; padding: 14px 8px; border-bottom: 1px solid #333; font-size: 0.9rem; }}
+        .comp-row:first-child {{ font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }}
+        .comp-row span {{ color: #10b981; font-size: 0.7rem; }}
+        .comp-row div:first-child {{ color: #aaa; font-weight: 500; }}
         
-        /* FAQ */
-        .faq {{ padding: 80px 20px; }}
-        .faq-item {{ max-width: 700px; margin: 0 auto 24px; padding: 24px; background: #f8f9fa; border-radius: 12px; }}
-        .faq-q {{ font-weight: 600; margin-bottom: 8px; }}
-        .faq-a {{ color: #666; }}
+        /* FAQ - Collapsible */
+        .faq {{ padding: 60px 20px; background: #fafafa; }}
+        .faq-item {{ max-width: 700px; margin: 0 auto 12px; background: #fff; border-radius: 10px; border: 1px solid #eee; overflow: hidden; }}
+        .faq-item summary {{ padding: 18px 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }}
+        .faq-item summary::-webkit-details-marker {{ display: none; }}
+        .faq-item summary::after {{ content: "+"; font-size: 1.2rem; color: #888; }}
+        .faq-item[open] summary::after {{ content: "−"; }}
+        .faq-item[open] summary {{ border-bottom: 1px solid #eee; }}
+        .faq-a {{ padding: 16px 20px; color: #555; font-size: 0.9rem; line-height: 1.6; }}
         
         /* Footer */
-        footer {{ text-align: center; padding: 40px; color: #888; font-size: 0.85rem; }}
+        footer {{ text-align: center; padding: 30px; color: #888; font-size: 0.8rem; }}
     </style>
 </head>
 <body>
     <section class="hero">
+        <p class="tagline">{product_type}</p>
         <h1>{name}</h1>
-        <p class="desc">{concentration}</p>
+        <p class="desc">{description}</p>
         <div class="tags">{features_html}</div>
         <div class="price">{price}</div>
     </section>
@@ -265,8 +323,8 @@ def generate_ecommerce_html(
     
     <section class="usage">
         <h2 class="section-title">How to Use</h2>
-        <p>{how_to_use}</p>
-        <p style="margin-top: 16px; font-size: 0.9rem;"><strong>Best for:</strong> {target_html}</p>
+        {usage_html}
+        <p style="margin-top: 14px; font-size: 0.85rem;"><strong>Best for:</strong> {target_html}</p>
     </section>
     
     <section class="comparison">
@@ -278,24 +336,34 @@ def generate_ecommerce_html(
                 <div>{product_b.get('name', 'Alternative')}<br><span>Alternative</span></div>
             </div>
             <div class="comp-row">
-                <div>Type / Version</div>
-                <div>{product_a.get('concentration', '-')}</div>
-                <div>{product_b.get('concentration', '-')}</div>
+                <div>Type</div>
+                <div>{product_a.get('product_type', '-')}</div>
+                <div>{product_b.get('product_type', '-')}</div>
             </div>
             <div class="comp-row">
-                <div>Pricing</div>
+                <div>Price</div>
                 <div>{product_a.get('price', '-')}</div>
                 <div>{product_b.get('price', '-')}</div>
             </div>
             <div class="comp-row">
-                <div>Target Users</div>
-                <div>{', '.join(product_a.get('skin_type', []))}</div>
-                <div>{', '.join(product_b.get('skin_type', []))}</div>
+                <div>Best for</div>
+                <div>{', '.join(product_a.get('target_users', []))}</div>
+                <div>{', '.join(product_b.get('target_users', []))}</div>
             </div>
             <div class="comp-row">
                 <div>Key Features</div>
-                <div>{', '.join(product_a.get('key_ingredients', [])[:3])}</div>
-                <div>{', '.join(product_b.get('key_ingredients', [])[:3])}</div>
+                <div>{', '.join(product_a.get('key_features', []))}</div>
+                <div>{', '.join(product_b.get('key_features', []))}</div>
+            </div>
+            <div class="comp-row">
+                <div>Benefits</div>
+                <div>{', '.join(product_a.get('benefits', []))}</div>
+                <div>{', '.join(product_b.get('benefits', []))}</div>
+            </div>
+            <div class="comp-row">
+                <div>Considerations</div>
+                <div>{product_a.get('considerations', '-')}</div>
+                <div>{product_b.get('considerations', '-')}</div>
             </div>
         </div>
     </section>
@@ -392,7 +460,7 @@ def display_results():
     
     with tab1:
         if faq_data:
-            st.subheader(f"FAQ for {faq_data.get('product_name', 'Product')}")
+            st.subheader("FAQ Data")
             st.json(faq_data)
             st.download_button(
                 "📥 Download FAQ JSON",
@@ -452,8 +520,12 @@ def main():
         else:
             current = get_current_provider()
             provider_labels = {
-                "gemini": "🔷 Gemini (Google)",
-                "groq": "🟢 Groq (Llama 3.3)"
+                "gemini": "🔷 Gemini (Real Competitor)",
+                "groq": "🟢 Groq (Fictional Competitor)"
+            }
+            provider_descriptions = {
+                "gemini": "Uses Google Search for real competitor data",
+                "groq": "Generates fictional but realistic competitor"
             }
             
             selected = st.selectbox(
@@ -468,6 +540,7 @@ def main():
                 st.rerun()
             
             st.caption(f"Model: `{get_current_model()}`")
+            st.caption(provider_descriptions.get(selected, ""))
         
         st.markdown("---")
         st.markdown("### 📊 Status")
@@ -530,12 +603,12 @@ def main():
         if "kv_pairs" not in st.session_state:
             st.session_state.kv_pairs = [
                 ("name", "GlowBoost Vitamin C Serum"),
-                ("concentration", "10% Vitamin C"),
-                ("skin_type", "Oily, Combination"),
-                ("key_ingredients", "Vitamin C, Hyaluronic Acid"),
+                ("product_type", "10% Vitamin C"),
+                ("target_users", "Oily, Combination"),
+                ("key_features", "Vitamin C, Hyaluronic Acid"),
                 ("benefits", "Brightening, Fades dark spots"),
                 ("how_to_use", "Apply 2–3 drops in the morning before sunscreen"),
-                ("side_effects", "Mild tingling for sensitive skin"),
+                ("considerations", "Mild tingling for sensitive skin"),
                 ("price", "₹699"),
             ]
         
@@ -592,7 +665,7 @@ def main():
                     use_container_width=True):
             # Build product data from key-value pairs
             product_data = {}
-            list_fields = ["skin_type", "key_ingredients", "benefits"]
+            list_fields = ["target_users", "key_features", "benefits"]
             
             for key, value in st.session_state.kv_pairs:
                 if key.strip():
@@ -602,8 +675,8 @@ def main():
                         product_data[key] = value
             
             # Check minimum required fields
-            required = ["name", "concentration", "skin_type", "key_ingredients", 
-                       "benefits", "how_to_use", "side_effects", "price"]
+            required = ["name", "product_type", "target_users", "key_features", 
+                       "benefits", "how_to_use", "considerations", "price"]
             missing = [f for f in required if f not in product_data]
             
             if missing:

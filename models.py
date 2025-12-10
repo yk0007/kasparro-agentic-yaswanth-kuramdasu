@@ -30,15 +30,15 @@ class ProductModel(BaseModel):
     All content generation is based on this model.
     """
     name: str = Field(..., description="Product name")
-    concentration: str = Field(..., description="Active ingredient concentration")
-    skin_type: List[str] = Field(..., description="Suitable skin types")
-    key_ingredients: List[str] = Field(..., description="List of key ingredients")
+    product_type: str = Field(..., description="Product type, version, or specification")
+    target_users: List[str] = Field(..., description="Target users or audience")
+    key_features: List[str] = Field(..., description="Key features or components")
     benefits: List[str] = Field(..., description="Product benefits")
     how_to_use: str = Field(..., description="Usage instructions")
-    side_effects: str = Field(..., description="Potential side effects")
+    considerations: str = Field(..., description="Limitations or considerations")
     price: str = Field(..., description="Product price")
     
-    @field_validator("name", "concentration", "how_to_use", "side_effects", "price")
+    @field_validator("name", "product_type", "how_to_use", "considerations", "price")
     @classmethod
     def validate_non_empty_string(cls, v: str) -> str:
         """Ensure string fields are not empty."""
@@ -46,7 +46,7 @@ class ProductModel(BaseModel):
             raise ValueError("Field cannot be empty")
         return v.strip()
     
-    @field_validator("skin_type", "key_ingredients", "benefits")
+    @field_validator("target_users", "key_features", "benefits")
     @classmethod
     def validate_non_empty_list(cls, v: List[str]) -> List[str]:
         """Ensure list fields have at least one item."""
@@ -122,10 +122,10 @@ class ProductPageContent(BaseModel):
 class ComparisonProduct(BaseModel):
     """Product structure for comparison page."""
     name: str
-    concentration: str
-    key_ingredients: List[str]
+    product_type: str
+    key_features: List[str]
     benefits: List[str]
-    skin_type: List[str]
+    target_users: List[str]
     price: str
 
 
@@ -156,11 +156,11 @@ class ContentMetadata(BaseModel):
 # Example product data for testing
 EXAMPLE_PRODUCT_DATA = {
     "name": "GlowBoost Vitamin C Serum",
-    "concentration": "10% Vitamin C",
-    "skin_type": ["Oily", "Combination"],
-    "key_ingredients": ["Vitamin C", "Hyaluronic Acid"],
+    "product_type": "10% Vitamin C",
+    "target_users": ["Oily", "Combination"],
+    "key_features": ["Vitamin C", "Hyaluronic Acid"],
     "benefits": ["Brightening", "Fades dark spots"],
     "how_to_use": "Apply 2–3 drops in the morning before sunscreen",
-    "side_effects": "Mild tingling for sensitive skin",
+    "considerations": "Mild tingling for sensitive skin",
     "price": "₹699"
 }

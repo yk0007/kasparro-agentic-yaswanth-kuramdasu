@@ -47,9 +47,16 @@ We adopted an **Orchestrator Pattern** where LangGraph's StateGraph coordinates 
 |-----------|------------|-----------|
 | Agent Framework | LangChain | Industry-standard, flexible architecture |
 | Orchestration | LangGraph StateGraph | Explicit state management, typed state |
-| LLM | Google Gemini | Provided API, supports grounding |
+| LLM (Content) | Llama 3.3 70B / Gemma 3 1B | High-quality content generation |
 | Validation | Pydantic 2.0 | Type-safe, automatic validation |
 | UI | Streamlit | Rapid prototyping, interactive |
+
+### LLM Provider Options
+
+| Provider | Content Model | Competitor | Recommendation |
+|----------|---------------|------------|----------------|
+| **Groq** | llama-3.3-70b | Fictional | ⭐ **Preferred** |
+| **Gemini** | gemma-3-1b-it | Fictional | Alternative |
 
 ---
 
@@ -80,10 +87,13 @@ We adopted an **Orchestrator Pattern** where LangGraph's StateGraph coordinates 
 ### Key Features
 - **Flexible Field Mapping**: Maps alternative field names automatically
   - `product_name` → `name`
-  - `user_type` → `skin_type`
-  - `key_features` → `key_ingredients`
+  - `skin_type` → `target_users`
+  - `key_ingredients` → `key_features`
+  - `concentration` → `product_type`
+  - `side_effects` → `considerations`
 - **API Key Rotation**: Multiple keys with automatic rotation on rate limits
 - **Dynamic Preview**: All content from JSON, no hardcoded text
+- **No External Facts**: Product A content strictly from input data only
 
 ---
 
