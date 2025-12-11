@@ -5,14 +5,14 @@ A production-grade agentic automation system that generates structured, machine-
 ## 🚀 Features
 
 - **6 Specialized Agents**: Parser, Question Generator, FAQ, Product Page, Comparison, Output
-- **LangGraph Orchestration**: StateGraph-based workflow with proper state management
+- **LangGraph Orchestration**: StateGraph-based workflow using `compiled.invoke()`
 - **LLM-Powered Logic Blocks**: Dynamic content generation for any product type
-- **Dual LLM Provider Support**: 
-  - **Groq** (Recommended): Fast generation with llama-3.3-70b
-  - **Gemini**: Alternative with gemma-3-1b-it
+- **Groq LLM Provider**: Fast generation with llama-3.3-70b-versatile
 - **Custom Template Engine**: Class-based templates with validation
 - **Streamlit Demo UI**: Interactive interface for content generation
 - **Machine-Readable Output**: 3 JSON files (FAQ, Product, Comparison)
+- **15+ FAQ Questions**: Generates comprehensive FAQ content
+- **Test Suite**: 23 unit and integration tests included
 
 ## 📁 Project Structure
 
@@ -21,10 +21,12 @@ A production-grade agentic automation system that generates structured, machine-
 ├── logic_blocks/       # LLM-powered content generation
 ├── templates/          # Template engine
 ├── orchestrator/       # LangGraph workflow
+├── tests/              # Unit and integration tests
 ├── output/             # Generated JSON files
 ├── docs/               # Documentation
 ├── models.py           # Pydantic data models
-├── config.py           # Configuration (API keys, models)
+├── config.py           # Groq configuration
+├── utils.py            # Utility functions
 ├── app.py              # Streamlit UI
 └── requirements.txt    # Dependencies
 ```
@@ -58,9 +60,8 @@ cp .env.example .env
 # Edit .env and add your API keys
 ```
 
-**Required API Keys:**
-- `GROQ_API_KEY` - Groq API key (recommended, fast generation)
-- `GEMINI_API_KEYS` - Google Gemini API key(s) (optional alternative)
+**Required API Key:**
+- `GROQ_API_KEY` - Groq API key for LLM generation
 
 ### 5. Run the Application
 
@@ -68,23 +69,32 @@ cp .env.example .env
 streamlit run app.py
 ```
 
-## 🔧 LLM Provider Options
+## 🔧 LLM Configuration
 
-| Provider | Content Model | Competitor Data | Recommendation |
-|----------|---------------|-----------------|----------------|
-| **Groq** | llama-3.3-70b | Fictional (fast) | ⭐ **Preferred** |
-| **Gemini** | gemma-3-1b-it | Fictional | Alternative |
+| Provider | Model | Use Case |
+|----------|-------|----------|
+| **Groq** | llama-3.3-70b-versatile | All content generation |
 
-> **Note:** Groq is recommended for faster and more reliable content generation.
+> **Note:** This system uses Groq exclusively. Competitor products are fictional (no external search).
 
 ## 📖 Usage
 
-1. **Select LLM Provider** in the sidebar (Groq recommended)
-2. **Input Product Data**: Enter product JSON or use text fields
-3. **Validate**: Click "Validate JSON" to check the input
-4. **Generate**: Click "Generate Content" to run the multi-agent workflow
-5. **View Results**: See generated content in FAQ, Product, and Comparison tabs
-6. **Download**: Click download buttons to save JSON files
+1. **Input Product Data**: Enter product JSON or use text fields
+2. **Validate**: Click "Validate JSON" to check the input
+3. **Generate**: Click "Generate Content" to run the multi-agent workflow
+4. **View Results**: See generated content in FAQ, Product, and Comparison tabs
+5. **Download**: Click download buttons to save JSON files
+
+## ✅ Running Tests
+
+```bash
+pytest tests/ -v
+```
+
+All 23 tests should pass, verifying:
+- LangGraph uses `compiled.invoke()`
+- No external search is used
+- FAQ generates 15+ questions
 
 ## 🔧 Example Input
 

@@ -5,15 +5,12 @@ Transforms product safety information using LLM.
 """
 
 from typing import Dict, List, Any
-import sys
-import os
 import json
 import logging
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from models import ProductModel
 from config import invoke_with_retry
+from utils import clean_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +39,7 @@ Output ONLY valid JSON."""
 
         response = invoke_with_retry(prompt).strip()
         
-        if "```" in response:
-            response = response.split("```")[1]
-            if response.startswith("json"):
-                response = response[4:]
-        response = response.strip()
+        response = clean_json_response(response)
         
         expanded = json.loads(response)
         

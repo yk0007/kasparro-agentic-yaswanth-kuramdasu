@@ -11,9 +11,6 @@ from datetime import datetime
 
 from langgraph.graph import StateGraph, END
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from orchestrator.state import WorkflowState, create_initial_state
 from models import ProductModel, QuestionModel
@@ -317,10 +314,10 @@ def run_workflow(
     progress_callback: Optional[Callable[[str, float], None]] = None
 ) -> WorkflowState:
     """
-    Run the complete multi-agent workflow.
+    Run the complete multi-agent workflow using LangGraph.
     
-    Executes agents in sequence following the LangGraph workflow definition:
-    parse -> generate_questions -> faq -> product_page -> comparison -> output
+    Executes the compiled StateGraph workflow, properly utilizing LangGraph's
+    orchestration capabilities instead of manual node execution.
     
     Args:
         product_data: Raw product data dictionary
@@ -336,52 +333,34 @@ def run_workflow(
         >>> result["output_files"]
         ["output/faq.json", "output/product_page.json", "output/comparison_page.json"]
     """
-    logger.info("Starting multi-agent workflow")
-    
-    # Create initial state
-    state = create_initial_state(product_data)
-    
-    # Define the workflow steps (following StateGraph definition)
-    steps = [
-        ("parse", parse_node),
-        ("generate_questions", generate_questions_node),
-        ("faq", faq_node),
-        ("product_page", product_page_node),
-        ("comparison", comparison_node),
-        ("output", output_node),
-    ]
-    
-    total_steps = len(steps)
+    logger.info("Starting multi-agent workflow using LangGraph")
     
     try:
         if progress_callback:
-            progress_callback("Starting...", 0.0)
+            progress_callback("Initializing workflow...", 0.0)
         
-        # Execute each step in sequence
-        for i, (step_name, step_fn) in enumerate(steps):
-            logger.info(f"Executing step: {step_name}")
-            
-            if progress_callback:
-                progress_callback(step_name, i / total_steps)
-            
-            # Execute the step and merge updates into state
-            updates = step_fn(state)
-            
-            # Merge updates into state
-            for key, value in updates.items():
-                state[key] = value
-            
-            state["current_step"] = step_name
+        # Create initial state
+        state = create_initial_state(product_data)
+        
+        # Create the compiled LangGraph workflow
+        compiled = create_workflow()
+        
+        if progress_callback:
+            progress_callback("Executing LangGraph workflow...", 0.1)
+        
+        # Execute workflow using LangGraph's compiled.invoke()
+        # This is the proper LangGraph execution mechanism
+        result = compiled.invoke(state)
         
         if progress_callback:
             progress_callback("Completed", 1.0)
         
-        state["current_step"] = "completed"
-        logger.info("Workflow completed successfully")
-        return state
+        logger.info("Workflow completed successfully via LangGraph")
+        return result
         
     except Exception as e:
         logger.error(f"Workflow failed: {str(e)}")
+        state = create_initial_state(product_data)
         state["errors"].append(f"Workflow error: {str(e)}")
         state["current_step"] = "failed"
         return state

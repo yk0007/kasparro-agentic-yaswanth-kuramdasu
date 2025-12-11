@@ -5,12 +5,9 @@ Functions for comparing products using LLM.
 """
 
 from typing import Dict, List, Any
-import sys
-import os
 import re
 import logging
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ProductModel
 from config import invoke_with_retry

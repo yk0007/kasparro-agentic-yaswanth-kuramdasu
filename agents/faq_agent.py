@@ -9,9 +9,6 @@ import logging
 import json
 from typing import List, Dict, Any, Tuple
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ProductModel, QuestionModel, QuestionCategory
 from config import invoke_with_retry
@@ -37,8 +34,11 @@ class FAQAgent:
         min_faqs: Minimum number of FAQ items
     """
     
+    # Minimum FAQ items required per assignment specification
+    MIN_FAQ_QUESTIONS: int = 15
+    
     name: str = "faq_agent"
-    min_faqs: int = 5
+    min_faqs: int = MIN_FAQ_QUESTIONS
     
     def __init__(self):
         """Initialize the FAQ Agent."""
@@ -105,13 +105,14 @@ class FAQAgent:
         """
         Select diverse questions for FAQ.
         
-        Ensures at least one question from each category if available.
+        Ensures at least one question from each category if available,
+        then fills to reach minimum of 15 questions.
         
         Args:
             questions: All generated questions
             
         Returns:
-            Selected questions for FAQ
+            Selected questions for FAQ (minimum 15)
         """
         selected = []
         by_category: Dict[QuestionCategory, List[QuestionModel]] = {}
@@ -122,20 +123,20 @@ class FAQAgent:
                 by_category[q.category] = []
             by_category[q.category].append(q)
         
-        # Select at least one from each category
+        # Select at least one from each category first
         for category in QuestionCategory:
             if category in by_category and by_category[category]:
                 selected.append(by_category[category][0])
         
-        # Add more to reach minimum if needed
-        for category, qs in by_category.items():
-            for q in qs[1:]:
-                if len(selected) >= max(self.min_faqs, 7):
-                    break
-                if q not in selected:
-                    selected.append(q)
+        # Add more questions to reach minimum of 15
+        for q in questions:
+            if len(selected) >= self.min_faqs:
+                break
+            if q not in selected:
+                selected.append(q)
         
-        return selected[:max(self.min_faqs, 7)]
+        logger.info(f"{self.name}: Selected {len(selected)} questions (min required: {self.min_faqs})")
+        return selected[:self.min_faqs]
     
     def _generate_blocks(self, product: ProductModel) -> Dict[str, Any]:
         """Generate all logic blocks for answer generation."""

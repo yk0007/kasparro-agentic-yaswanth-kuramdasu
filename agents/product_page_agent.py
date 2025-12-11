@@ -8,9 +8,6 @@ Single responsibility: Build complete product page using logic blocks.
 import logging
 from typing import Dict, Any, Tuple, List
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ProductModel
 from config import invoke_with_retry

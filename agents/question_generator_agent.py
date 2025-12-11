@@ -9,9 +9,6 @@ import logging
 import json
 from typing import List, Dict, Any, Tuple
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ProductModel, QuestionModel, QuestionCategory
 from config import invoke_with_retry
@@ -95,7 +92,7 @@ class QuestionGeneratorAgent:
     
     def _build_prompt(self, product: ProductModel) -> str:
         """Build the prompt for question generation."""
-        return f"""Generate exactly 18 user questions about this product.
+        return f"""Generate exactly {self.min_questions} user questions about this product.
 The questions should be what a potential customer might ask.
 
 Product Information:

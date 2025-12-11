@@ -5,14 +5,12 @@ Responsible for formatting and saving final JSON outputs.
 Single responsibility: Validate against templates, add metadata, write files.
 """
 
+import os
 import logging
 import json
-import os
 from datetime import datetime
 from typing import Dict, Any, Tuple, List
 
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from templates import FAQTemplate, ProductTemplate, ComparisonTemplate
 

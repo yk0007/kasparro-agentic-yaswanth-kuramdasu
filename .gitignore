@@ -1,37 +1,76 @@
-# Byte-compiled / optimized / DLL files
+# Project specific - do not commit
+.agent/
+Assignment/
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Environment
-.env
-.venv/
+# Virtual environments
 venv/
 ENV/
+env/
+.venv/
+
+# Environment variables - NEVER commit secrets!
+.env
+.env.local
+.env.*.local
+
+# Streamlit secrets
+.streamlit/secrets.toml
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Logs
 *.log
+logs/
 
-# Output files (generated)
-# output/*.json  # Keep example outputs in repo
+# Temporary files
+*.tmp
+*.temp
+.cache/
 
-# Distribution
-dist/
-build/
-*.egg-info/
+# Output files (keep structure, ignore generated content)
+# Note: We include example output files in the repo but ignore dynamic ones
+output/*.json
 
-# Assignment folder (original assignment files)
-Assignment/
-
-# Agent config
-.agent/
+# Keep the output directory structure
+!output/.gitkeep

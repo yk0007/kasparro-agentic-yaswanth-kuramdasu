@@ -510,37 +510,17 @@ def main():
         
         st.markdown("---")
         
-        # LLM Provider Selection
+        # LLM Provider Display (Groq-only)
         st.markdown("### 🤖 LLM Provider")
-        from config import get_available_providers, set_llm_provider, get_current_provider, get_current_model
+        from config import get_available_providers, get_current_provider, get_current_model
         
         available = get_available_providers()
         if not available:
-            st.error("No LLM providers configured. Add API keys to .env")
+            st.error("GROQ_API_KEY not configured. Add to .env")
         else:
-            current = get_current_provider()
-            provider_labels = {
-                "gemini": "🔷 Gemini (Real Competitor)",
-                "groq": "🟢 Groq (Fictional Competitor)"
-            }
-            provider_descriptions = {
-                "gemini": "Uses Google Search for real competitor data",
-                "groq": "Generates fictional but realistic competitor"
-            }
-            
-            selected = st.selectbox(
-                "Select Provider:",
-                options=available,
-                index=available.index(current) if current in available else 0,
-                format_func=lambda x: provider_labels.get(x, x)
-            )
-            
-            if selected != current:
-                set_llm_provider(selected)
-                st.rerun()
-            
+            st.success("🟢 Groq (Fictional Competitor)")
             st.caption(f"Model: `{get_current_model()}`")
-            st.caption(provider_descriptions.get(selected, ""))
+            st.caption("Generates fictional but realistic competitor")
         
         st.markdown("---")
         st.markdown("### 📊 Status")

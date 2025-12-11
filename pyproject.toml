@@ -1,0 +1,33 @@
+[project]
+name = "kasparro-content-generator"
+version = "1.0.0"
+description = "Multi-Agent Content Generation System using LangGraph"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "langchain>=0.1.0",
+    "langchain-groq>=0.1.0",
+    "langgraph>=0.0.1",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0.0",
+    "streamlit>=1.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agents*", "logic_blocks*", "orchestrator*", "templates*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"

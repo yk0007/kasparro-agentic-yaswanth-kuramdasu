@@ -1,20 +1,17 @@
 """
 Comparison Agent.
 
-Responsible for creating product comparison page with a competitor product.
-Uses LLM to generate realistic competitor product based on actual market research.
+Responsible for creating product comparison page with a fictional competitor product.
+Always generates a fictional competitor - no external search.
 """
 
 import logging
 import json
 from typing import Dict, Any, Tuple, List
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ProductModel
-from config import invoke_with_retry, invoke_grounded, is_grounding_available
+from config import invoke_with_retry
 from logic_blocks import (
     compare_ingredients_block,
     compare_benefits_block,
@@ -102,13 +99,8 @@ class ComparisonAgent:
         Returns:
             ProductModel for competitor Product B
         """
-        # Adjust prompt based on grounding availability
-        if is_grounding_available():
-            research_instruction = "Use Google Search to find a REAL competitor product that exists in the market."
-        else:
-            research_instruction = "Create a realistic FICTIONAL competitor product that would compete in the same market."
-        
-        prompt = f"""{research_instruction}
+        # Always create fictional competitor (no external search)
+        prompt = f"""Create a realistic FICTIONAL competitor product that would compete in the same market.
 
 INPUT PRODUCT (Main Product):
 - Name: {product_a.name}
@@ -141,11 +133,7 @@ Output as JSON:
 Output ONLY the JSON, no other text."""
 
         try:
-            # Use grounded call for Gemini, regular for Groq
-            if is_grounding_available():
-                raw = invoke_grounded(prompt)
-            else:
-                raw = invoke_with_retry(prompt)
+            raw = invoke_with_retry(prompt)
             product_b_data = self._parse_product_b_response(raw, product_a)
             return ProductModel(**product_b_data)
             
