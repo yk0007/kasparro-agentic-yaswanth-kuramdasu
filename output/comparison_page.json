@@ -21,7 +21,7 @@
       "considerations": "Mild tingling for sensitive skin"
     },
     "product_b": {
-      "name": "VitaGlow",
+      "name": "VitaGlow Serum",
       "product_type": "Vitamin C Serum",
       "key_features": [
         "Vitamin C",
@@ -35,9 +35,9 @@
         "Oily",
         "Combination"
       ],
-      "price": "₹599",
+      "price": "₹499",
       "how_to_use": "Apply daily",
-      "considerations": "Patch test required"
+      "considerations": "Not for sensitive"
     }
   },
   "comparison": {
@@ -53,7 +53,7 @@
       ],
       "total_ingredients_a": 2,
       "total_ingredients_b": 2,
-      "analysis": "GlowBoost Vitamin C Serum and VitaGlow share similar key ingredients, including Vitamin C and a form of Hyaluronic Acid, which can help with skin hydration and brightening. However, GlowBoost Vitamin C Serum specifically lists \"Hyaluronic Acid\", while VitaGlow lists \"Hyaluronic\", suggesting a possible difference in formulation or concentration between the two products."
+      "analysis": "GlowBoost Vitamin C Serum and VitaGlow Serum share similar key ingredients, including Vitamin C and Hyaluronic Acid, which provide antioxidant and moisturizing benefits. The main difference between the two serums appears to be the full inclusion of \"Hyaluronic Acid\" in GlowBoost, whereas VitaGlow Serum lists it as \"Hyaluronic\", potentially indicating a partial or derivative form."
     },
     "benefits": {
       "common": [],
@@ -75,21 +75,21 @@
       ],
       "total_benefits_a": 2,
       "total_benefits_b": 2,
-      "analysis": "Both GlowBoost Vitamin C Serum and VitaGlow offer similar benefits, including fading dark spots and brightening the skin, but GlowBoost is specifically formulated with vitamin C for enhanced brightening effects. Ultimately, the choice between the two products may come down to personal preference, as both serums appear to provide comparable results in terms of spot fading and skin brightening."
+      "analysis": "Both GlowBoost Vitamin C Serum and VitaGlow Serum offer similar benefits of fading dark spots and brightening the skin, with GlowBoost specifically utilizing vitamin C for its brightening effects. The key difference lies in the explicit mention of vitamin C in GlowBoost, which may provide additional antioxidant benefits, whereas VitaGlow's formulation is not specified."
     },
     "product_type": {
       "product_a": "10% Vitamin C",
       "product_b": "Vitamin C Serum",
-      "analysis": "GlowBoost Vitamin C Serum offers 10% Vitamin C, while VitaGlow provides Vitamin C Serum."
+      "analysis": "GlowBoost Vitamin C Serum offers 10% Vitamin C, while VitaGlow Serum provides Vitamin C Serum."
     },
     "price": {
       "price_a": "₹699",
-      "price_b": "₹599",
+      "price_b": "₹499",
       "price_a_numeric": 699.0,
-      "price_b_numeric": 599.0,
-      "difference_numeric": 100.0,
-      "cheaper_product": "VitaGlow",
-      "value_analysis": "VitaGlow is more budget-friendly."
+      "price_b_numeric": 499.0,
+      "difference_numeric": 200.0,
+      "cheaper_product": "VitaGlow Serum",
+      "value_analysis": "VitaGlow Serum is more budget-friendly."
     },
     "suitability": {
       "product_a_best_for": [
@@ -101,15 +101,15 @@
         "Combination"
       ],
       "overlap": [
-        "Oily",
-        "Combination"
+        "Combination",
+        "Oily"
       ]
     }
   },
-  "recommendation": "GlowBoost Vitamin C Serum (₹699) offers Brightening, Fades dark spots. VitaGlow (₹599) provides Fades spots, Brightens skin. Choose based on your specific needs and budget.",
+  "recommendation": "GlowBoost Vitamin C Serum (₹699) offers Brightening, Fades dark spots. VitaGlow Serum (₹499) provides Fades spots, Brightens skin. Choose based on your specific needs and budget.",
   "metadata": {
-    "generated_at": "2025-12-11T22:42:06.762330",
-    "agent": "output_agent",
+    "generated_at": "2025-12-13T15:51:33.162422",
+    "template_type": "comparison",
     "version": "1.0",
     "logic_blocks_used": [
       "compare_ingredients_block",

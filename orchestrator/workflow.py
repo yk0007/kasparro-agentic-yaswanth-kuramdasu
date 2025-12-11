@@ -335,9 +335,19 @@ def run_workflow(
     """
     logger.info("Starting multi-agent workflow using LangGraph")
     
+    # Node-to-progress percentage mapping
+    NODE_PROGRESS = {
+        "parse": ("Parser Agent", 0.20),
+        "generate_questions": ("Question Generator", 0.40),
+        "faq": ("FAQ Agent", 0.60),
+        "product_page": ("Product Page Agent", 0.80),
+        "comparison": ("Comparison Agent", 0.95),
+        "output": ("Output Agent", 0.98),
+    }
+    
     try:
         if progress_callback:
-            progress_callback("Initializing workflow...", 0.0)
+            progress_callback("Initializing workflow...", 0.05)
         
         # Create initial state
         state = create_initial_state(product_data)
@@ -346,17 +356,29 @@ def run_workflow(
         compiled = create_workflow()
         
         if progress_callback:
-            progress_callback("Executing LangGraph workflow...", 0.1)
+            progress_callback("Executing LangGraph workflow...", 0.10)
         
-        # Execute workflow using LangGraph's compiled.invoke()
-        # This is the proper LangGraph execution mechanism
-        result = compiled.invoke(state)
+        # Use stream() to get per-node updates for progress tracking
+        final_state = None
+        for node_output in compiled.stream(state):
+            # node_output is a dict with the node name as key
+            for node_name, node_result in node_output.items():
+                if node_name in NODE_PROGRESS:
+                    step_name, pct = NODE_PROGRESS[node_name]
+                    if progress_callback:
+                        progress_callback(f"{step_name} complete", pct)
+                    logger.info(f"Progress: {step_name} ({int(pct*100)}%)")
+                final_state = node_result if isinstance(node_result, dict) else state
+        
+        # Merge final state properly
+        if final_state:
+            state.update(final_state)
         
         if progress_callback:
             progress_callback("Completed", 1.0)
         
         logger.info("Workflow completed successfully via LangGraph")
-        return result
+        return state
         
     except Exception as e:
         logger.error(f"Workflow failed: {str(e)}")

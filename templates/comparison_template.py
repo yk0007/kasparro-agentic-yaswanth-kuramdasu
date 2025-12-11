@@ -14,7 +14,7 @@ class ComparisonTemplate(BaseTemplate):
     Template for comparison page content.
     
     Compares Product A (the input product) with Product B (a fictional 
-    competitor generated using Gemini with grounding).
+    competitor generated using Groq LLM - always fictional).
     """
     
     template_type: str = "comparison"
@@ -83,40 +83,21 @@ class ComparisonTemplate(BaseTemplate):
         """
         Build the comparison page output structure.
         
-        Combines product data with comparison logic block outputs.
+        Pass-through the data built by ComparisonAgent.
         
         Args:
-            data: Dictionary of content data
+            data: Dictionary of content data (built by agent)
             blocks: Dictionary of logic block outputs
             
         Returns:
             Rendered comparison page content dictionary
         """
-        products = data["products"]
-        
-        # Process Product A
-        product_a = self._process_product(products.get("product_a", {}))
-        
-        # Process Product B
-        product_b = self._process_product(products.get("product_b", {}))
-        
-        # Build comparison structure
-        comparison = self._build_comparison(data, blocks)
-        
-        # Generate recommendation
-        recommendation = data.get(
-            "recommendation", 
-            self._generate_recommendation(product_a, product_b, comparison)
-        )
-        
+        # Pass-through the agent-built structure
         return {
             "page_type": self.template_type,
-            "products": {
-                "product_a": product_a,
-                "product_b": product_b
-            },
-            "comparison": comparison,
-            "recommendation": recommendation
+            "products": data.get("products", {}),
+            "comparison": data.get("comparison", {}),
+            "recommendation": data.get("recommendation", "")
         }
     
     def _process_product(self, product: Dict[str, Any]) -> Dict[str, Any]:

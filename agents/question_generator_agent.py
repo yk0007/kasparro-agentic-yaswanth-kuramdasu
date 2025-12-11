@@ -1,7 +1,7 @@
 """
 Question Generator Agent.
 
-Responsible for generating categorized user questions using Gemini LLM.
+Responsible for generating categorized user questions using Groq LLM.
 Single responsibility: Generate 15+ questions in 5 categories.
 """
 
@@ -21,7 +21,7 @@ class QuestionGeneratorAgent:
     """
     Agent responsible for generating categorized user questions.
     
-    Uses Gemini to generate diverse, relevant questions across 5 categories:
+    Uses Groq LLM to generate diverse, relevant questions across 5 categories:
     - Informational: What is this product?
     - Safety: Side effects, precautions
     - Usage: How to use, frequency
@@ -44,7 +44,7 @@ class QuestionGeneratorAgent:
         """
         Generate categorized questions for the product.
         
-        Uses Gemini LLM with automatic API key rotation to generate 
+        Uses Groq LLM with automatic API key rotation to generate 
         at least 15 questions across 5 different categories.
         
         Args:
@@ -60,7 +60,7 @@ class QuestionGeneratorAgent:
         try:
             # Generate questions using LLM with key rotation
             prompt = self._build_prompt(product)
-            logger.debug(f"{self.name}: Calling Gemini for question generation")
+            logger.debug(f"{self.name}: Calling Groq for question generation")
             
             # Use invoke_with_retry for automatic key rotation on rate limits
             raw_response = invoke_with_retry(prompt)

@@ -61,6 +61,7 @@ cp .env.example .env
 ```
 
 **Required API Key:**
+
 - `GROQ_API_KEY` - Groq API key for LLM generation
 
 ### 5. Run the Application
@@ -71,8 +72,8 @@ streamlit run app.py
 
 ## 🔧 LLM Configuration
 
-| Provider | Model | Use Case |
-|----------|-------|----------|
+| Provider | Model                   | Use Case               |
+| -------- | ----------------------- | ---------------------- |
 | **Groq** | llama-3.3-70b-versatile | All content generation |
 
 > **Note:** This system uses Groq exclusively. Competitor products are fictional (no external search).
@@ -92,6 +93,7 @@ pytest tests/ -v
 ```
 
 All 23 tests should pass, verifying:
+
 - LangGraph uses `compiled.invoke()`
 - No external search is used
 - FAQ generates 15+ questions
@@ -113,10 +115,10 @@ All 23 tests should pass, verifying:
 
 ## 📊 Output Files
 
-| File | Description |
-|------|-------------|
-| `faq.json` | 5+ categorized Q&A pairs |
-| `product_page.json` | Complete product page content |
+| File                   | Description                        |
+| ---------------------- | ---------------------------------- |
+| `faq.json`             | 5+ categorized Q&A pairs           |
+| `product_page.json`    | Complete product page content      |
 | `comparison_page.json` | Product A vs Competitor comparison |
 
 ## 📚 Documentation
@@ -127,8 +129,7 @@ See [docs/projectdocumentation.md](docs/projectdocumentation.md) for detailed sy
 
 - **Python 3.10+**
 - **LangChain** - Agent framework
-- **LangGraph** - Workflow orchestration
-- **Google Gemini API** - LLM with grounding
-- **Groq API** - Fast LLM alternative
+- **LangGraph** - Workflow orchestration with `StateGraph`
+- **Groq API** - Fast LLM (llama-3.3-70b-versatile)
 - **Pydantic** - Data validation
 - **Streamlit** - Web UI

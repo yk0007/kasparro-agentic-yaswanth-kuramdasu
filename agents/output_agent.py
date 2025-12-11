@@ -109,99 +109,73 @@ class OutputAgent:
         return output_files, errors
     
     def _process_faq(self, content: Dict[str, Any]) -> str:
-        """Process and save FAQ content."""
+        """Process and save FAQ content using template."""
         template = FAQTemplate()
-        
-        # Extract blocks for metadata
         blocks = content.pop("blocks", {})
         
-        # Validate
-        is_valid, validation_errors = template.validate(content)
-        if not is_valid:
-            logger.warning(f"{self.name}: FAQ validation issues: {validation_errors}")
-        
-        # Build output structure
-        output = {
-            "page_type": "faq",
-            "product_name": content.get("product_name", ""),
-            "questions": content.get("questions", []),
-            "metadata": {
-                "generated_at": datetime.now().isoformat(),
-                "agent": self.name,
-                "version": "1.0",
-                "total_questions": len(content.get("questions", [])),
-                "logic_blocks_used": list(blocks.keys())
+        try:
+            output = template.render(content, blocks)
+        except ValueError as e:
+            logger.warning(f"{self.name}: FAQ validation issue: {e}, using fallback")
+            output = {
+                "page_type": "faq",
+                "product_name": content.get("product_name", ""),
+                "questions": content.get("questions", []),
+                "metadata": {
+                    "generated_at": datetime.now().isoformat(),
+                    "agent": self.name,
+                    "version": "1.0"
+                }
             }
-        }
         
-        # Write to file
         filepath = os.path.join(self.output_path, "faq.json")
         self._write_json(filepath, output)
-        
         return filepath
     
     def _process_product_page(self, content: Dict[str, Any]) -> str:
-        """Process and save product page content."""
+        """Process and save product page content using template."""
         template = ProductTemplate()
-        
-        # Extract blocks for metadata
         blocks = content.pop("blocks", {})
         
-        # Build output structure  
-        product_data = content.get("product", {})
-        
-        output = {
-            "page_type": "product",
-            "product": {
-                "name": product_data.get("name", ""),
-                "tagline": product_data.get("tagline", ""),
-                "headline": product_data.get("headline", ""),
-                "description": product_data.get("description", ""),
-                "product_type": product_data.get("product_type", ""),
-                "key_features": product_data.get("key_features", []),
-                "ingredients": product_data.get("ingredients", {}),
-                "benefits": product_data.get("benefits", {}),
-                "how_to_use": product_data.get("how_to_use", {}),
-                "suitable_for": product_data.get("suitable_for", []),
-                "safety_information": product_data.get("safety_information", {}),
-                "price": product_data.get("price", {})
-            },
-            "metadata": {
-                "generated_at": datetime.now().isoformat(),
-                "agent": self.name,
-                "version": "1.0",
-                "logic_blocks_used": list(blocks.keys())
+        try:
+            output = template.render(content, blocks)
+        except ValueError as e:
+            logger.warning(f"{self.name}: Product validation issue: {e}, using fallback")
+            output = {
+                "page_type": "product",
+                "product": content.get("product", {}),
+                "metadata": {
+                    "generated_at": datetime.now().isoformat(),
+                    "agent": self.name,
+                    "version": "1.0"
+                }
             }
-        }
         
-        # Write to file
         filepath = os.path.join(self.output_path, "product_page.json")
         self._write_json(filepath, output)
-        
         return filepath
     
     def _process_comparison(self, content: Dict[str, Any]) -> str:
-        """Process and save comparison page content."""
+        """Process and save comparison page content using template."""
         template = ComparisonTemplate()
-        
-        # Extract blocks for metadata
         blocks = content.pop("blocks", {})
         
-        # Build output structure
-        output = {
-            "page_type": "comparison",
-            "products": content.get("products", {}),
-            "comparison": content.get("comparison", {}),
-            "recommendation": content.get("recommendation", ""),
-            "metadata": {
-                "generated_at": datetime.now().isoformat(),
-                "agent": self.name,
-                "version": "1.0",
-                "logic_blocks_used": list(blocks.keys())
+        try:
+            output = template.render(content, blocks)
+        except ValueError as e:
+            logger.warning(f"{self.name}: Comparison validation issue: {e}, using fallback")
+            output = {
+                "page_type": "comparison",
+                "products": content.get("products", {}),
+                "comparison": content.get("comparison", {}),
+                "recommendation": content.get("recommendation", ""),
+                "metadata": {
+                    "generated_at": datetime.now().isoformat(),
+                    "agent": self.name,
+                    "version": "1.0"
+                }
             }
-        }
         
-        # Write to file
         filepath = os.path.join(self.output_path, "comparison_page.json")
         self._write_json(filepath, output)
         

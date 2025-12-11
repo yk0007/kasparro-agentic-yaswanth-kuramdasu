@@ -59,65 +59,34 @@ class ProductTemplate(BaseTemplate):
         """
         Build the product page output structure.
         
-        Combines raw product data with enriched logic block outputs.
+        Pass-through the product data built by ProductPageAgent.
         
         Args:
-            data: Dictionary of content data
+            data: Dictionary of content data (built by agent)
             blocks: Dictionary of logic block outputs
             
         Returns:
             Rendered product page content dictionary
         """
-        product_data = data["product"]
+        product_data = data.get("product", {})
         
-        # Build comprehensive product structure
-        product = {
-            "name": product_data.get("name", ""),
-            "tagline": data.get("tagline", self._generate_tagline(product_data)),
-            "headline": data.get("headline", self._generate_headline(product_data)),
-            "description": self._generate_description(product_data, blocks),
-            
-            # From product data
-            "key_features": self._extract_key_features(product_data),
-            
-            # From ingredients block
-            "ingredients": blocks.get("ingredients_block", {
-                "active": product_data.get("key_features", []),
-                "details": {}
-            }),
-            
-            # From benefits block  
-            "benefits": blocks.get("benefits_block", {
-                "primary": product_data.get("benefits", []),
-                "detailed": []
-            }),
-            
-            # From usage block
-            "how_to_use": blocks.get("usage_block", {
-                "steps": [],
-                "frequency": "",
-                "best_time": ""
-            }),
-            
-            # Skin type suitability
-            "suitable_for": product_data.get("target_users", []),
-            
-            # From safety block
-            "safety_information": blocks.get("safety_block", {
-                "considerations": product_data.get("considerations", ""),
-                "precautions": []
-            }),
-            
-            # Pricing
-            "price": {
-                "amount": product_data.get("price", ""),
-                "currency": self._extract_currency(product_data.get("price", ""))
-            }
-        }
-        
+        # Pass-through the agent-built structure
         return {
             "page_type": self.template_type,
-            "product": product
+            "product": {
+                "name": product_data.get("name", ""),
+                "tagline": product_data.get("tagline", ""),
+                "headline": product_data.get("headline", ""),
+                "description": product_data.get("description", ""),
+                "product_type": product_data.get("product_type", ""),
+                "key_features": product_data.get("key_features", []),
+                "ingredients": product_data.get("ingredients", {}),
+                "benefits": product_data.get("benefits", {}),
+                "how_to_use": product_data.get("how_to_use", {}),
+                "suitable_for": product_data.get("suitable_for", []),
+                "safety_information": product_data.get("safety_information", {}),
+                "price": product_data.get("price", {})
+            }
         }
     
     def _generate_tagline(self, product: Dict[str, Any]) -> str:
@@ -174,11 +143,43 @@ class ProductTemplate(BaseTemplate):
         return features
     
     def _extract_currency(self, price: str) -> str:
-        """Extract currency from price string."""
-        if "₹" in price:
-            return "INR"
-        elif "$" in price:
-            return "USD"
-        elif "€" in price:
-            return "EUR"
-        return "INR"
+        """
+        Extract currency code from price string.
+        
+        Uses a mapping of currency symbols to ISO codes for better 
+        internationalization support.
+        
+        Args:
+            price: Price string potentially containing currency symbol
+            
+        Returns:
+            ISO currency code (default: currency detected or 'USD')
+        """
+        import re
+        
+        # Currency symbol to ISO code mapping (extensible)
+        CURRENCY_MAP = {
+            "₹": "INR",
+            "$": "USD", 
+            "€": "EUR",
+            "£": "GBP",
+            "¥": "JPY",
+            "₩": "KRW",
+            "฿": "THB",
+            "₽": "RUB",
+            "R": "ZAR",  # South African Rand
+            "kr": "SEK",  # Swedish Krona
+        }
+        
+        # Try to match currency symbols
+        for symbol, code in CURRENCY_MAP.items():
+            if symbol in price:
+                return code
+        
+        # Try regex for currency codes like USD, INR, EUR
+        iso_match = re.search(r'\b(USD|INR|EUR|GBP|JPY|CAD|AUD)\b', price.upper())
+        if iso_match:
+            return iso_match.group(1)
+        
+        # Default to USD if no currency detected
+        return "USD"

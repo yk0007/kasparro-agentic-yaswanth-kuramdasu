@@ -3,7 +3,9 @@
 ## 1. Problem Statement
 
 ### Objective
+
 Design and implement a modular agentic automation system that:
+
 - Takes structured product data as input (any product type, not just skincare)
 - Automatically generates 15+ categorized user questions
 - Creates 3 machine-readable content pages (FAQ, Product, Comparison)
@@ -11,6 +13,7 @@ Design and implement a modular agentic automation system that:
 - Demonstrates production-grade multi-agent architecture
 
 ### Key Challenges
+
 1. **Modularity**: Avoid monolithic design; each agent must have single responsibility
 2. **Orchestration**: Coordinate multiple agents with proper state management
 3. **Content Engineering**: Create reusable logic blocks and template engine
@@ -19,6 +22,7 @@ Design and implement a modular agentic automation system that:
 6. **Resilience**: Handle API rate limits with key rotation
 
 ### Requirements
+
 - 6 distinct agents with clear boundaries
 - LangGraph StateGraph for orchestration
 - 5+ reusable logic blocks
@@ -35,6 +39,7 @@ Design and implement a modular agentic automation system that:
 We adopted an **Orchestrator Pattern** where LangGraph's StateGraph coordinates all agents. Each agent is stateless, receives input from the shared state, performs its task, and returns updates to the state.
 
 **Key Design Principles:**
+
 - **Single Responsibility**: Each agent does one thing well
 - **Stateless Agents**: No hidden global state; state flows through LangGraph
 - **Composable Logic Blocks**: Pure functions that transform data
@@ -43,18 +48,18 @@ We adopted an **Orchestrator Pattern** where LangGraph's StateGraph coordinates 
 
 ### Technology Choices
 
-| Component | Technology | Rationale |
-|-----------|------------|-----------|
-| Agent Framework | LangChain | Industry-standard, flexible architecture |
-| Orchestration | LangGraph StateGraph | Explicit state management, typed state |
-| LLM (Content) | Llama 3.3 70B / Gemma 3 1B | High-quality content generation |
-| Validation | Pydantic 2.0 | Type-safe, automatic validation |
-| UI | Streamlit | Rapid prototyping, interactive |
+| Component       | Technology                 | Rationale                                |
+| --------------- | -------------------------- | ---------------------------------------- |
+| Agent Framework | LangChain                  | Industry-standard, flexible architecture |
+| Orchestration   | LangGraph StateGraph       | Explicit state management, typed state   |
+| LLM (Content)   | Llama 3.3 70B / Gemma 3 1B | High-quality content generation          |
+| Validation      | Pydantic 2.0               | Type-safe, automatic validation          |
+| UI              | Streamlit                  | Rapid prototyping, interactive           |
 
 ### LLM Configuration
 
-| Provider | Model | Use Case |
-|----------|-------|----------|
+| Provider | Model                   | Use Case               |
+| -------- | ----------------------- | ---------------------- |
 | **Groq** | llama-3.3-70b-versatile | All content generation |
 
 > **Note:** This system uses Groq exclusively. No external search APIs are used.
@@ -64,15 +69,17 @@ We adopted an **Orchestrator Pattern** where LangGraph's StateGraph coordinates 
 ## 3. Scopes & Assumptions
 
 ### In Scope
+
 - Product data parsing and validation with flexible field names
 - Automated question generation (15+)
 - FAQ, Product, and Comparison page generation
-- Realistic competitor research via LLM
+- Fictional competitor generation via LLM (no external search)
 - JSON output with metadata
 - Modern minimal HTML ecommerce preview
 - Streamlit demo UI with JSON editor and text fields
 
 ### Out of Scope
+
 - Database persistence
 - User authentication
 - Production deployment
@@ -80,12 +87,14 @@ We adopted an **Orchestrator Pattern** where LangGraph's StateGraph coordinates 
 - Real-time collaboration
 
 ### Assumptions
+
 - Input is a valid JSON object (field names are flexible)
 - Groq API is available with provided key
 - Competitor product is ALWAYS fictional (no external search)
 - Single product processing per run
 
 ### Key Features
+
 - **Flexible Field Mapping**: Maps alternative field names automatically
   - `product_name` → `name`
   - `skin_type` → `target_users`
@@ -107,7 +116,7 @@ graph TD
     subgraph Input
         A[User Input: Product JSON]
     end
-    
+
     subgraph "LangGraph StateGraph"
         B[Parser Agent]
         C[Question Generator Agent]
@@ -116,21 +125,21 @@ graph TD
         F[Comparison Agent]
         G[Output Agent]
     end
-    
+
     subgraph "Supporting Components"
         H[Logic Blocks]
         I[Template Engine]
         J[Pydantic Models]
         K[API Key Manager]
     end
-    
+
     subgraph Output
         L[faq.json]
         M[product_page.json]
         N[comparison_page.json]
         O[preview.html]
     end
-    
+
     A --> B
     B --> C
     C --> D
@@ -143,7 +152,7 @@ graph TD
     G --> M
     G --> N
     G --> O
-    
+
     H -.-> D
     H -.-> E
     H -.-> F
@@ -166,23 +175,23 @@ sequenceDiagram
     participant Pr as Product
     participant C as Comparison
     participant O as Output
-    
+
     U->>W: Submit Product JSON
     W->>P: Parse & Validate (with field mapping)
     P-->>W: ProductModel
     W->>Q: Generate Questions (with key rotation)
     Q-->>W: List[Question] (15+)
-    
+
     par Parallel Content Generation
         W->>F: Create FAQ
         W->>Pr: Create Product Page
         W->>C: Research Competitor & Compare
     end
-    
+
     F-->>W: FAQ Content
     Pr-->>W: Product Content
     C-->>W: Comparison Content
-    
+
     W->>O: Format & Save (JSON + HTML)
     O-->>W: File Paths
     W-->>U: Results + Preview
@@ -190,14 +199,14 @@ sequenceDiagram
 
 ### 4.3 Agent Responsibilities
 
-| Agent | Input | Output | Responsibility |
-|-------|-------|--------|----------------|
-| **Parser** | Raw JSON dict | ProductModel | Validate, map field names, apply defaults |
-| **Question Generator** | ProductModel | List[Question] | Generate 15+ categorized questions via LLM |
-| **FAQ** | ProductModel + Questions | FAQ Content | Create 5+ Q&As with answers using LLM |
-| **Product Page** | ProductModel | Product Content | Build comprehensive product page with LLM |
-| **Comparison** | ProductModel | Comparison Content | Research competitor via LLM, compare products |
-| **Output** | All Content | JSON + HTML Files | Validate, add metadata, save files |
+| Agent                  | Input                    | Output             | Responsibility                                |
+| ---------------------- | ------------------------ | ------------------ | --------------------------------------------- |
+| **Parser**             | Raw JSON dict            | ProductModel       | Validate, map field names, apply defaults     |
+| **Question Generator** | ProductModel             | List[Question]     | Generate 15+ categorized questions via LLM    |
+| **FAQ**                | ProductModel + Questions | FAQ Content        | Create 5+ Q&As with answers using LLM         |
+| **Product Page**       | ProductModel             | Product Content    | Build comprehensive product page with LLM     |
+| **Comparison**         | ProductModel             | Comparison Content | Research competitor via LLM, compare products |
+| **Output**             | All Content              | JSON + HTML Files  | Validate, add metadata, save files            |
 
 ### 4.4 State Schema
 
@@ -205,19 +214,19 @@ sequenceDiagram
 class WorkflowState(TypedDict):
     # Input
     product_data: Dict[str, Any]
-    
+
     # Parsed
     product_model: Optional[Dict[str, Any]]
     questions: List[Dict[str, Any]]
-    
+
     # Generated Content
     faq_content: Dict[str, Any]
     product_content: Dict[str, Any]
     comparison_content: Dict[str, Any]
-    
+
     # Output
     output_files: List[str]
-    
+
     # Metadata
     errors: List[str]
     logs: List[str]
@@ -228,13 +237,13 @@ class WorkflowState(TypedDict):
 
 Logic blocks are **pure functions** that transform product data into structured content:
 
-| Block | Purpose | Output |
-|-------|---------|--------|
-| `benefits_block` | Extract and structure benefits | primary_benefits, detailed_benefits, categories |
-| `usage_block` | Parse usage instructions | steps, frequency, best_time, tips |
-| `ingredients_block` | Enrich ingredient data | active_ingredients, ingredient_details |
-| `safety_block` | Generate safety info | side_effects, precautions, suitability |
-| `comparison_blocks` | Compare two products | ingredients_diff, benefits_diff, pricing |
+| Block               | Purpose                        | Output                                          |
+| ------------------- | ------------------------------ | ----------------------------------------------- |
+| `benefits_block`    | Extract and structure benefits | primary_benefits, detailed_benefits, categories |
+| `usage_block`       | Parse usage instructions       | steps, frequency, best_time, tips               |
+| `ingredients_block` | Enrich ingredient data         | active_ingredients, ingredient_details          |
+| `safety_block`      | Generate safety info           | side_effects, precautions, suitability          |
+| `comparison_blocks` | Compare two products           | ingredients_diff, benefits_diff, pricing        |
 
 ### 4.6 Template Engine
 
@@ -249,22 +258,22 @@ classDiagram
         +validate(data): Tuple[bool, errors]
         +render(data, blocks): Dict
     }
-    
+
     class FAQTemplate {
         +MIN_QUESTIONS: 5
         +_validate_specific(data)
     }
-    
+
     class ProductTemplate {
         +_generate_tagline(product)
         +_generate_headline(product)
     }
-    
+
     class ComparisonTemplate {
         +_validate_product_b(data)
         +_build_comparison(data)
     }
-    
+
     BaseTemplate <|-- FAQTemplate
     BaseTemplate <|-- ProductTemplate
     BaseTemplate <|-- ComparisonTemplate
@@ -274,7 +283,7 @@ classDiagram
 
 ```python
 # config.py
-API_KEYS = [key1, key2, key3, key4]  # Multiple keys
+GROQ_API_KEYS = [key1, key2, key3, key4]  # Multiple keys
 _current_key_index = 0
 
 def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
@@ -282,9 +291,9 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
     for attempt in range(max_attempts):
         try:
             api_key = get_next_api_key()  # Rotate key
-            llm = ChatGoogleGenerativeAI(api_key=api_key)
+            llm = ChatGroq(api_key=api_key, model="llama-3.3-70b-versatile")
             return llm.invoke(prompt).content
-        except ResourceExhausted:
+        except RateLimitError:
             logger.warning(f"Rate limit, rotating key...")
             continue
     raise Exception("All API keys exhausted")
@@ -295,23 +304,27 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
 ## 5. Design Decisions
 
 ### Why LangGraph over Simple Orchestration?
+
 - **Typed State**: TypedDict ensures type safety
 - **Explicit Edges**: Clear visualization of workflow
 - **Extensibility**: Easy to add new agents/nodes
 - **Error Handling**: State tracking enables graceful recovery
 
 ### Why Class-Based Templates?
+
 - **Validation**: Enforce structure before rendering
 - **Reusability**: Base class with shared logic
 - **Extensibility**: Easy to add new template types
 - **Metadata**: Automatic tracking of logic blocks used
 
 ### Why Flexible Field Mapping?
+
 - **Universal**: Works with any product type (software, hardware, cosmetics)
 - **User-Friendly**: No strict field name requirements
 - **Robust**: Applies sensible defaults for missing fields
 
 ### Why API Key Rotation?
+
 - **Rate Limit Handling**: Automatic rotation when quota exceeded
 - **Resilience**: Multiple keys ensure continuous operation
 - **Transparent**: Works without user intervention
@@ -321,22 +334,26 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
 ## 6. Extensibility Considerations
 
 ### Adding New Agents
+
 1. Create new agent class in `agents/`
 2. Add node function in `orchestrator/workflow.py`
 3. Add node and edges to StateGraph
 4. Update WorkflowState if needed
 
 ### Adding New Logic Blocks
+
 1. Create pure function in `logic_blocks/`
 2. Export from `__init__.py`
 3. Use in relevant agents
 
 ### Adding New Templates
+
 1. Extend BaseTemplate in `templates/`
 2. Define required_fields and required_blocks
 3. Implement `_validate_specific()` and `_render_structure()`
 
 ### Adding New Field Mappings
+
 1. Update `FIELD_MAPPINGS` in `agents/parser_agent.py`
 2. Add alternative field names to the mapping
 
@@ -345,6 +362,7 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
 ## 7. Output Specifications
 
 ### FAQ JSON Structure
+
 ```json
 {
   "page_type": "faq",
@@ -367,6 +385,7 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
 ```
 
 ### Product Page JSON Structure
+
 ```json
 {
   "page_type": "product",
@@ -388,6 +407,7 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
 ```
 
 ### Comparison JSON Structure
+
 ```json
 {
   "page_type": "comparison",
@@ -406,6 +426,7 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
 ```
 
 ### HTML Preview
+
 - Minimal modern design
 - All content dynamically rendered from JSON
 - No hardcoded product-specific text
