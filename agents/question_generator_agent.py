@@ -11,10 +11,47 @@ from typing import List, Dict, Any, Tuple
 
 
 from models import ProductModel, QuestionModel, QuestionCategory
-from config import invoke_with_retry
+from config import invoke_with_retry, invoke_with_metrics
 
 
 logger = logging.getLogger(__name__)
+
+
+def _to_question_category(raw: str) -> QuestionCategory:
+    """
+    Map a free-form category string to a QuestionCategory enum.
+    
+    Tries exact value match, case-insensitive value, then enum name,
+    and defaults to INFORMATIONAL if no match is found.
+    
+    Args:
+        raw: Raw category string from LLM response
+        
+    Returns:
+        Matched QuestionCategory or INFORMATIONAL as fallback
+    """
+    if not raw:
+        return QuestionCategory.INFORMATIONAL
+    s = str(raw).strip()
+    
+    # 1) Exact value match
+    for cat in QuestionCategory:
+        if s == cat.value:
+            return cat
+    
+    # 2) Case-insensitive value match
+    s_lower = s.lower()
+    for cat in QuestionCategory:
+        if s_lower == cat.value.lower():
+            return cat
+    
+    # 3) Enum name match (e.g., "informational" -> INFORMATIONAL)
+    for cat in QuestionCategory:
+        if s_lower == cat.name.lower():
+            return cat
+    
+    # Default fallback
+    return QuestionCategory.INFORMATIONAL
 
 
 class QuestionGeneratorAgent:
@@ -51,19 +88,26 @@ class QuestionGeneratorAgent:
             product: Validated ProductModel
             
         Returns:
-            Tuple of (list of QuestionModels, list of errors)
+            Tuple of (list of QuestionModels, list of errors, agent_metrics dict)
         """
         logger.info(f"{self.name}: Generating questions for {product.name}")
         errors: List[str] = []
         questions: List[QuestionModel] = []
+        agent_metrics = {"tokens_in": 0, "tokens_out": 0, "output_len": 0, "prompts": {}}
         
         try:
-            # Generate questions using LLM with key rotation
+            # Generate questions using LLM with metrics tracking
             prompt = self._build_prompt(product)
             logger.debug(f"{self.name}: Calling Groq for question generation")
             
-            # Use invoke_with_retry for automatic key rotation on rate limits
-            raw_response = invoke_with_retry(prompt)
+            # Use invoke_with_metrics for automatic metrics tracking
+            raw_response, metrics, prompt_text = invoke_with_metrics(prompt)
+            
+            # Aggregate metrics
+            agent_metrics["tokens_in"] += metrics.get("tokens_in", 0)
+            agent_metrics["tokens_out"] += metrics.get("tokens_out", 0)
+            agent_metrics["output_len"] += metrics.get("output_len", 0)
+            agent_metrics["prompts"][metrics["prompt_hash"]] = prompt_text
             
             # Parse the response
             questions = self._parse_response(raw_response, product)
@@ -79,7 +123,7 @@ class QuestionGeneratorAgent:
                 questions.extend(additional)
             
             logger.info(f"{self.name}: Generated {len(questions)} questions")
-            return questions, errors
+            return questions, errors, agent_metrics
             
         except Exception as e:
             error = f"Error generating questions: {str(e)}"
@@ -88,7 +132,7 @@ class QuestionGeneratorAgent:
             
             # Return fallback questions
             fallback = self._generate_fallback_questions(product)
-            return fallback, errors
+            return fallback, errors, agent_metrics
     
     def _build_prompt(self, product: ProductModel) -> str:
         """Build the prompt for question generation."""
@@ -121,7 +165,7 @@ Output as JSON array with this structure:
 
 IMPORTANT: 
 - Output ONLY the JSON array, no other text
-- Generate exactly 18 questions total
+- Generate exactly {self.min_questions} questions total
 - Make questions natural and customer-focused
 - Base questions ONLY on the provided product data
 - Make questions specific to THIS product type"""
@@ -145,21 +189,57 @@ IMPORTANT:
                 response = response[:-3]
             response = response.strip()
             
+            # Robust JSON extraction: find JSON array even with leading/trailing text
+            import re
+            json_match = re.search(r'\[.*\]', response, re.DOTALL)
+            if json_match:
+                response = json_match.group()
+            
             # Parse JSON
             parsed = json.loads(response)
             
+            # Comment 4: Handle non-list responses by attempting to locate 'questions' array
             if not isinstance(parsed, list):
-                logger.warning(f"{self.name}: Expected list, got {type(parsed)}")
-                return self._generate_fallback_questions(product)
+                logger.warning(
+                    "%s: LLM response root is %s, attempting to locate 'questions' array",
+                    self.name,
+                    type(parsed).__name__
+                )
+                if isinstance(parsed, dict):
+                    candidate = parsed.get("questions") or parsed.get("items")
+                    if isinstance(candidate, list):
+                        parsed = candidate
+                    else:
+                        logger.warning(
+                            "%s: No usable list found under 'questions' or 'items'; falling back to defaults",
+                            self.name
+                        )
+                        return self._generate_fallback_questions(product)
+                else:
+                    logger.warning(
+                        "%s: Non-list, non-dict JSON root; falling back to defaults",
+                        self.name
+                    )
+                    return self._generate_fallback_questions(product)
             
-            # Convert to QuestionModels
+            # Convert to QuestionModels using _to_question_category helper
             for i, item in enumerate(parsed):
                 if isinstance(item, dict) and "question" in item:
                     category_str = item.get("category", "Informational")
-                    try:
-                        category = QuestionCategory(category_str)
-                    except ValueError:
-                        category = QuestionCategory.INFORMATIONAL
+                    category = _to_question_category(category_str)
+                    
+                    # Log if unknown category was mapped to default
+                    if category == QuestionCategory.INFORMATIONAL and category_str:
+                        if category_str.lower() not in (
+                            QuestionCategory.INFORMATIONAL.value.lower(),
+                            QuestionCategory.INFORMATIONAL.name.lower()
+                        ):
+                            logger.warning(
+                                "%s: Unknown category '%s' for question %d, falling back to INFORMATIONAL",
+                                self.name,
+                                category_str,
+                                i + 1
+                            )
                     
                     question = QuestionModel(
                         id=f"q{i+1}",
@@ -171,7 +251,7 @@ IMPORTANT:
             return questions
             
         except json.JSONDecodeError as e:
-            logger.error(f"{self.name}: Failed to parse JSON: {e}")
+            logger.error(f"{self.name}: Failed to parse JSON: {e}, response: {response[:200]}...")
             return self._generate_fallback_questions(product)
     
     def _generate_additional_questions(

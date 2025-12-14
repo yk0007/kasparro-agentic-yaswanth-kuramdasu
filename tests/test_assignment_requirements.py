@@ -194,28 +194,33 @@ class TestPageAssembly:
         agent = ComparisonAgent()
         assert agent is not None
     
-    def test_product_b_is_fictional_and_structured(self):
+    def test_product_b_is_fictional_and_structured(self, sample_product_data):
         """Product B must be fictional with structure (name, ingredients, benefits, price)."""
-        from agents import ComparisonAgent
+        from agents import ComparisonAgent, ParserAgent
         
+        # E1: Test directly via agent execution, not stale files
         agent = ComparisonAgent()
-        # Check agent can generate fictional product
-        # The agent should have method to create fictional competitor
+        
+        # Check agent has method to create fictional product
         assert hasattr(agent, '_generate_product_b') or hasattr(agent, 'execute')
         
-        # Verify from output file that Product B has required structure
-        import os
-        import json
-        output_path = os.path.join(os.path.dirname(__file__), '..', 'output', 'comparison_page.json')
-        if os.path.exists(output_path):
-            with open(output_path, 'r') as f:
-                data = json.load(f)
-            # Check Product B exists and has required fields
-            if 'product_b' in data:
-                product_b = data['product_b']
-                assert 'name' in product_b
-                # Should have some form of ingredients/features and benefits
-                assert 'benefits' in product_b or 'key_features' in product_b or 'ingredients' in product_b
+        # Parse the sample product first
+        parser = ParserAgent()
+        product, _ = parser.execute(sample_product_data)
+        
+        if product:
+            # Call the agent to generate comparison
+            comparison_content, errors, _ = agent.execute(product)
+            
+            # Check comparison_content has products
+            if 'products' in comparison_content:
+                products = comparison_content['products']
+                # Check Product B exists and has required fields
+                if 'product_b' in products:
+                    product_b = products['product_b']
+                    assert 'name' in product_b
+                    # Should have some form of ingredients/features and benefits
+                    assert any(k in product_b for k in ['benefits', 'key_features', 'ingredients'])
 
 
 # =============================================================================

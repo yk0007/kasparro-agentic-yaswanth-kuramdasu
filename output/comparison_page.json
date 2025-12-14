@@ -21,23 +21,23 @@
       "considerations": "Mild tingling for sensitive skin"
     },
     "product_b": {
-      "name": "VitaGlow Serum",
+      "name": "VitaGlow",
       "product_type": "Vitamin C Serum",
       "key_features": [
         "Vitamin C",
         "Hyaluronic"
       ],
       "benefits": [
-        "Fades spots",
-        "Brightens skin"
+        "Brightens Skin",
+        "Fades Spots"
       ],
       "target_users": [
         "Oily",
         "Combination"
       ],
-      "price": "₹499",
+      "price": "₹599",
       "how_to_use": "Apply daily",
-      "considerations": "Not for sensitive"
+      "considerations": "May irritate"
     }
   },
   "comparison": {
@@ -53,7 +53,7 @@
       ],
       "total_ingredients_a": 2,
       "total_ingredients_b": 2,
-      "analysis": "GlowBoost Vitamin C Serum and VitaGlow Serum share similar key ingredients, including Vitamin C and Hyaluronic Acid, which provide antioxidant and moisturizing benefits. The main difference between the two serums appears to be the full inclusion of \"Hyaluronic Acid\" in GlowBoost, whereas VitaGlow Serum lists it as \"Hyaluronic\", potentially indicating a partial or derivative form."
+      "analysis": "Both GlowBoost Vitamin C Serum and VitaGlow share similar key ingredients, including Vitamin C and a form of Hyaluronic Acid, which can help with skin hydration and brightening. The main difference between the two seems to be the full spelling of Hyaluronic Acid in GlowBoost, whereas VitaGlow shortens it to Hyaluronic, but the core benefits of the two products appear to be similar."
     },
     "benefits": {
       "common": [],
@@ -62,34 +62,44 @@
         "Fades dark spots"
       ],
       "unique_to_product_b": [
-        "Fades spots",
-        "Brightens skin"
+        "Brightens Skin",
+        "Fades Spots"
       ],
       "advantage_product_a": [
         "Brightening",
         "Fades dark spots"
       ],
       "advantage_product_b": [
-        "Fades spots",
-        "Brightens skin"
+        "Brightens Skin",
+        "Fades Spots"
       ],
       "total_benefits_a": 2,
       "total_benefits_b": 2,
-      "analysis": "Both GlowBoost Vitamin C Serum and VitaGlow Serum offer similar benefits of fading dark spots and brightening the skin, with GlowBoost specifically utilizing vitamin C for its brightening effects. The key difference lies in the explicit mention of vitamin C in GlowBoost, which may provide additional antioxidant benefits, whereas VitaGlow's formulation is not specified."
+      "analysis": "Both GlowBoost Vitamin C Serum and VitaGlow offer similar benefits of brightening the skin and fading dark spots, making them comparable in terms of their skincare effects. However, the GlowBoost Vitamin C Serum specifically highlights the presence of vitamin C, which may give it an edge in terms of antioxidant properties and potency."
     },
     "product_type": {
       "product_a": "10% Vitamin C",
       "product_b": "Vitamin C Serum",
-      "analysis": "GlowBoost Vitamin C Serum offers 10% Vitamin C, while VitaGlow Serum provides Vitamin C Serum."
+      "analysis": "GlowBoost Vitamin C Serum offers 10% Vitamin C, while VitaGlow provides Vitamin C Serum."
     },
     "price": {
-      "price_a": "₹699",
-      "price_b": "₹499",
+      "price_a": {
+        "amount": "699",
+        "currency": "INR",
+        "original": "₹699"
+      },
+      "price_b": {
+        "amount": "599",
+        "currency": "INR",
+        "original": "₹599"
+      },
+      "price_a_raw": "₹699",
+      "price_b_raw": "₹599",
       "price_a_numeric": 699.0,
-      "price_b_numeric": 499.0,
-      "difference_numeric": 200.0,
-      "cheaper_product": "VitaGlow Serum",
-      "value_analysis": "VitaGlow Serum is more budget-friendly."
+      "price_b_numeric": 599.0,
+      "difference_numeric": 100.0,
+      "cheaper_product": "VitaGlow",
+      "value_analysis": "VitaGlow is more budget-friendly."
     },
     "suitability": {
       "product_a_best_for": [
@@ -101,14 +111,14 @@
         "Combination"
       ],
       "overlap": [
-        "Combination",
-        "Oily"
+        "Oily",
+        "Combination"
       ]
     }
   },
-  "recommendation": "GlowBoost Vitamin C Serum (₹699) offers Brightening, Fades dark spots. VitaGlow Serum (₹499) provides Fades spots, Brightens skin. Choose based on your specific needs and budget.",
+  "recommendation": "GlowBoost Vitamin C Serum (₹699) offers Brightening, Fades dark spots. VitaGlow (₹599) provides Brightens Skin, Fades Spots. Choose based on your specific needs and budget.",
   "metadata": {
-    "generated_at": "2025-12-13T15:51:33.162422",
+    "generated_at": "2025-12-15T00:24:17.122650",
     "template_type": "comparison",
     "version": "1.0",
     "logic_blocks_used": [

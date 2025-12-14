@@ -9,8 +9,8 @@ import logging
 from typing import Dict, Any, Tuple, List
 
 
-from models import ProductModel
-from config import invoke_with_retry
+from models import ProductModel, NormalizedPrice
+from config import invoke_with_retry, invoke_with_metrics
 from logic_blocks import (
     generate_benefits_block,
     generate_usage_block,
@@ -40,7 +40,7 @@ class ProductPageAgent:
         """Initialize the Product Page Agent."""
         logger.info(f"Initialized {self.name}")
     
-    def execute(self, product: ProductModel) -> Tuple[Dict[str, Any], List[str]]:
+    def execute(self, product: ProductModel) -> Tuple[Dict[str, Any], List[str], Dict[str, Any]]:
         """
         Create product page content.
         
@@ -51,17 +51,18 @@ class ProductPageAgent:
             product: Validated ProductModel
             
         Returns:
-            Tuple of (product page content dict, list of errors)
+            Tuple of (product page content dict, list of errors, agent_metrics dict)
         """
         logger.info(f"{self.name}: Creating product page for {product.name}")
         errors: List[str] = []
+        agent_metrics = {"tokens_in": 0, "tokens_out": 0, "output_len": 0, "prompts": {}}
         
         try:
             # Generate all logic blocks
             blocks = self._generate_all_blocks(product)
             logger.info(f"{self.name}: Generated {len(blocks)} logic blocks")
             
-            # Generate enhanced descriptions using LLM
+            # Generate enhanced descriptions using LLM (tracked separately)
             tagline = self._generate_tagline(product)
             headline = self._generate_headline(product)
             description = self._generate_description(product, blocks)
@@ -70,10 +71,10 @@ class ProductPageAgent:
             product_content = {
                 "product": {
                     "name": product.name,
+                    "product_type": product.product_type,
                     "tagline": tagline,
                     "headline": headline,
                     "description": description,
-                    "product_type": product.product_type,
                     
                     "key_features": self._build_key_features(product, blocks),
                     
@@ -85,22 +86,23 @@ class ProductPageAgent:
                     
                     "safety_information": blocks["safety_block"],
                     
-                    "price": {
-                        "amount": product.price,
-                        "currency": "INR" if "₹" in product.price else "USD"
-                    }
+                    # Comment 1: Backward-compatible price fields
+                    # Keep legacy "price" as string for older consumers
+                    "price": product.price,
+                    # Add normalized_price with currency/amount for newer consumers
+                    "normalized_price": NormalizedPrice.from_string(product.price).model_dump()
                 },
                 "blocks": blocks
             }
             
             logger.info(f"{self.name}: Product page created successfully")
-            return product_content, errors
+            return product_content, errors, agent_metrics
             
         except Exception as e:
             error = f"Error creating product page: {str(e)}"
             logger.error(f"{self.name}: {error}")
             errors.append(error)
-            return {}, errors
+            return {}, errors, agent_metrics
     
     def _generate_all_blocks(self, product: ProductModel) -> Dict[str, Any]:
         """Generate all logic blocks for the product page."""

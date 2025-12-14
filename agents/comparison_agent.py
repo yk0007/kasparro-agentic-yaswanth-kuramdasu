@@ -11,7 +11,7 @@ from typing import Dict, Any, Tuple, List
 
 
 from models import ProductModel
-from config import invoke_with_retry
+from config import invoke_with_retry, invoke_with_metrics
 from logic_blocks import (
     compare_ingredients_block,
     compare_benefits_block,
@@ -39,7 +39,7 @@ class ComparisonAgent:
         """Initialize the Comparison Agent."""
         logger.info(f"Initialized {self.name}")
     
-    def execute(self, product: ProductModel) -> Tuple[Dict[str, Any], List[str]]:
+    def execute(self, product: ProductModel) -> Tuple[Dict[str, Any], List[str], Dict[str, Any]]:
         """
         Create comparison page content.
         
@@ -49,10 +49,11 @@ class ComparisonAgent:
             product: Validated ProductModel (Product A)
             
         Returns:
-            Tuple of (comparison content dict, list of errors)
+            Tuple of (comparison content dict, list of errors, agent_metrics dict)
         """
         logger.info(f"{self.name}: Creating comparison for {product.name}")
         errors: List[str] = []
+        agent_metrics = {"tokens_in": 0, "tokens_out": 0, "output_len": 0, "prompts": {}}
         
         try:
             # Generate realistic competitor using LLM
@@ -79,13 +80,13 @@ class ComparisonAgent:
             }
             
             logger.info(f"{self.name}: Comparison page created successfully")
-            return comparison_content, errors
+            return comparison_content, errors, agent_metrics
             
         except Exception as e:
             error = f"Error creating comparison: {str(e)}"
             logger.error(f"{self.name}: {error}")
             errors.append(error)
-            return {}, errors
+            return {}, errors, agent_metrics
     
     def _generate_product_b(self, product_a: ProductModel) -> ProductModel:
         """

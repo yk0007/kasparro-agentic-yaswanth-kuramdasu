@@ -79,12 +79,15 @@ Write a brief 2-sentence comparison. Output ONLY the text."""
 
 
 def generate_pricing_block(product_a: ProductModel, product_b: ProductModel) -> Dict[str, Any]:
-    """Compare pricing between two products (no LLM call)."""
-    price_a = product_a.price
-    price_b = product_b.price
+    """Compare pricing between two products using NormalizedPrice (no LLM call)."""
+    from models import NormalizedPrice
     
-    price_a_num = _extract_price(price_a)
-    price_b_num = _extract_price(price_b)
+    # B1: Use NormalizedPrice for robust price parsing
+    price_a_norm = NormalizedPrice.from_string(product_a.price)
+    price_b_norm = NormalizedPrice.from_string(product_b.price)
+    
+    price_a_num = float(price_a_norm.amount) if price_a_norm.amount else 0.0
+    price_b_num = float(price_b_norm.amount) if price_b_norm.amount else 0.0
     
     difference = abs(price_a_num - price_b_num)
     
@@ -96,17 +99,17 @@ def generate_pricing_block(product_a: ProductModel, product_b: ProductModel) -> 
         analysis = f"{product_b.name} is more budget-friendly."
     
     return {
-        "price_a": price_a,
-        "price_b": price_b,
+        # Comment 1: Backward-compatible price fields
+        # Normalized objects for newer consumers
+        "price_a": price_a_norm.model_dump(),
+        "price_b": price_b_norm.model_dump(),
+        # Raw strings for legacy consumers
+        "price_a_raw": price_a_norm.original,
+        "price_b_raw": price_b_norm.original,
+        # Numeric fields for comparison logic
         "price_a_numeric": price_a_num,
         "price_b_numeric": price_b_num,
         "difference_numeric": difference,
         "cheaper_product": cheaper,
         "value_analysis": analysis
     }
-
-
-def _extract_price(price: str) -> float:
-    """Extract numeric value from price string."""
-    nums = re.findall(r'[\d.]+', price.replace(',', ''))
-    return float(nums[0]) if nums else 0.0

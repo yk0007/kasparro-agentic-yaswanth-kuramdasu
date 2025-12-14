@@ -22,6 +22,43 @@ class QuestionCategory(str, Enum):
     COMPARISON = "Comparison"
 
 
+class NormalizedPrice(BaseModel):
+    """Normalized price model with currency and amount."""
+    amount: str = Field(..., description="Price amount (numeric or string)")
+    currency: str = Field(default="INR", description="Currency code (INR, USD, EUR, etc.)")
+    original: str = Field(default="", description="Original price string")
+    
+    @classmethod
+    def from_string(cls, price_str: str) -> "NormalizedPrice":
+        """Parse price string into normalized format."""
+        import re
+        
+        # Currency symbol mappings
+        currency_map = {
+            "₹": "INR", "Rs": "INR", "Rs.": "INR",
+            "$": "USD", "US$": "USD",
+            "€": "EUR", "£": "GBP", "¥": "JPY",
+            "AED": "AED", "SGD": "SGD", "AUD": "AUD"
+        }
+        
+        currency = "INR"  # Default
+        amount = price_str.strip()
+        
+        # Detect currency from symbol
+        for symbol, code in currency_map.items():
+            if symbol in price_str:
+                currency = code
+                amount = price_str.replace(symbol, "").strip()
+                break
+        
+        # Extract numeric part
+        numeric_match = re.search(r'[\d,]+\.?\d*', amount)
+        if numeric_match:
+            amount = numeric_match.group().replace(",", "")
+        
+        return cls(amount=amount, currency=currency, original=price_str)
+
+
 class ProductModel(BaseModel):
     """
     Validated product data model.

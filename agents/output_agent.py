@@ -111,16 +111,24 @@ class OutputAgent:
     def _process_faq(self, content: Dict[str, Any]) -> str:
         """Process and save FAQ content using template."""
         template = FAQTemplate()
-        blocks = content.pop("blocks", {})
+        # Use .get() instead of .pop() to avoid mutating original content
+        blocks = content.get("blocks", {})
+        content_copy = {k: v for k, v in content.items() if k != "blocks"}
         
         try:
-            output = template.render(content, blocks)
+            output = template.render(content_copy, blocks)
         except ValueError as e:
+            error_msg = str(e)
+            # Enforce critical validation (missing required fields)
+            if "Missing required" in error_msg:
+                logger.error(f"{self.name}: Critical FAQ validation failure: {e}")
+                raise  # Don't write bad output
+            # Allow non-critical validation issues with fallback
             logger.warning(f"{self.name}: FAQ validation issue: {e}, using fallback")
             output = {
                 "page_type": "faq",
-                "product_name": content.get("product_name", ""),
-                "questions": content.get("questions", []),
+                "product_name": content_copy.get("product_name", ""),
+                "questions": content_copy.get("questions", []),
                 "metadata": {
                     "generated_at": datetime.now().isoformat(),
                     "agent": self.name,
@@ -135,15 +143,23 @@ class OutputAgent:
     def _process_product_page(self, content: Dict[str, Any]) -> str:
         """Process and save product page content using template."""
         template = ProductTemplate()
-        blocks = content.pop("blocks", {})
+        # Use .get() instead of .pop() to avoid mutating original content
+        blocks = content.get("blocks", {})
+        content_copy = {k: v for k, v in content.items() if k != "blocks"}
         
         try:
-            output = template.render(content, blocks)
+            output = template.render(content_copy, blocks)
         except ValueError as e:
+            error_msg = str(e)
+            # Enforce critical validation (missing required fields)
+            if "Missing required" in error_msg:
+                logger.error(f"{self.name}: Critical Product validation failure: {e}")
+                raise  # Don't write bad output
+            # Allow non-critical validation issues with fallback
             logger.warning(f"{self.name}: Product validation issue: {e}, using fallback")
             output = {
                 "page_type": "product",
-                "product": content.get("product", {}),
+                "product": content_copy.get("product", {}),
                 "metadata": {
                     "generated_at": datetime.now().isoformat(),
                     "agent": self.name,
@@ -158,17 +174,25 @@ class OutputAgent:
     def _process_comparison(self, content: Dict[str, Any]) -> str:
         """Process and save comparison page content using template."""
         template = ComparisonTemplate()
-        blocks = content.pop("blocks", {})
+        # Use .get() instead of .pop() to avoid mutating original content
+        blocks = content.get("blocks", {})
+        content_copy = {k: v for k, v in content.items() if k != "blocks"}
         
         try:
-            output = template.render(content, blocks)
+            output = template.render(content_copy, blocks)
         except ValueError as e:
+            error_msg = str(e)
+            # Enforce critical validation (missing required fields)
+            if "Missing required" in error_msg:
+                logger.error(f"{self.name}: Critical Comparison validation failure: {e}")
+                raise  # Don't write bad output
+            # Allow non-critical validation issues with fallback
             logger.warning(f"{self.name}: Comparison validation issue: {e}, using fallback")
             output = {
                 "page_type": "comparison",
-                "products": content.get("products", {}),
-                "comparison": content.get("comparison", {}),
-                "recommendation": content.get("recommendation", ""),
+                "products": content_copy.get("products", {}),
+                "comparison": content_copy.get("comparison", {}),
+                "recommendation": content_copy.get("recommendation", ""),
                 "metadata": {
                     "generated_at": datetime.now().isoformat(),
                     "agent": self.name,

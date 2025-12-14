@@ -44,23 +44,17 @@ Output ONLY valid JSON array."""
         
         return {
             "key_features": features,
-            "active_ingredients": features,
             "ingredient_details": details,
-            "feature_details": details,
             "ingredient_count": len(features),
             "highlight_feature": features[0] if features else "",
-            "highlight_ingredient": features[0] if features else "",
             "product_type": product.product_type
         }
     except Exception as e:
         logger.warning(f"Ingredients block LLM failed: {e}")
         return {
             "key_features": features,
-            "active_ingredients": features,
             "ingredient_details": [{"name": f, "description": f"{f} is a key component."} for f in features],
-            "feature_details": [{"name": f, "description": f"{f} is a key component."} for f in features],
             "ingredient_count": len(features),
             "highlight_feature": features[0] if features else "",
-            "highlight_ingredient": features[0] if features else "",
             "product_type": product.product_type
         }

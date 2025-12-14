@@ -45,7 +45,6 @@ Output ONLY valid JSON."""
         
         return {
             "considerations": considerations,
-            "considerations": considerations,
             "target_users": target_users,
             "suitable_for": target_users,
             "expanded_safety": expanded,
@@ -54,7 +53,6 @@ Output ONLY valid JSON."""
     except Exception as e:
         logger.warning(f"Safety block LLM failed: {e}")
         return {
-            "considerations": considerations,
             "considerations": considerations,
             "target_users": target_users,
             "suitable_for": target_users,

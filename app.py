@@ -133,36 +133,36 @@ def run_generation(product_data: Dict[str, Any]):
     # Create a placeholder for real-time log updates in sidebar
     log_placeholder = st.sidebar.empty()
     
-    def progress_callback(step: str, progress: float):
-        """Callback for workflow progress updates."""
-        timestamp = datetime.now().strftime('%H:%M:%S')
-        log_entry = f"{timestamp} - {step}"
+    def progress_callback(step: str, progress: float, metrics: Dict[str, Any] = None):
+        """Callback for workflow progress updates.
+
+        Uses the numeric progress reported by the workflow and ensures the
+        Streamlit progress bar is **monotonic** (never moves backwards).
+        """
+        log_entry = f"{step}"
         st.session_state.logs.append(log_entry)
         st.session_state.current_step = step
-        
-        # Map step names to progress percentages
-        step_progress = {
-            "Initializing": 5,
-            "Parser": 20,
-            "Question Generator": 40,
-            "FAQ": 60,
-            "Product Page": 80,
-            "Comparison": 95,
-            "Output": 98,
-            "Completed": 100
-        }
-        
-        # Find matching progress percentage
-        pct = progress * 100
-        for key, val in step_progress.items():
-            if key.lower() in step.lower():
-                pct = val
-                break
-        
+
+        # Aggregate per-node metrics into session state
+        if metrics:
+            if "workflow_metrics" not in st.session_state:
+                st.session_state.workflow_metrics = {}
+            st.session_state.workflow_metrics.update(metrics)
+
+        # Initialize last_progress in session state
+        if "last_progress" not in st.session_state:
+            st.session_state.last_progress = 0.0
+
+        # Clamp progress between 0 and 1 and enforce monotonicity
+        pct = max(0.0, min(1.0, float(progress)))
+        if pct < st.session_state.last_progress:
+            pct = st.session_state.last_progress
+        st.session_state.last_progress = pct
+
         # Update progress bar and status
-        progress_bar.progress(int(pct) / 100)
-        status_text.markdown(f"**{step}** ({int(pct)}%)")
-        
+        progress_bar.progress(pct)
+        status_text.markdown(f"**{step}** ({int(pct * 100)}%)")
+
         # Update logs display in sidebar (WITHOUT adding another header)
         recent_logs = st.session_state.logs[-6:]
         log_display = ""
@@ -193,225 +193,34 @@ def run_generation(product_data: Dict[str, Any]):
     st.session_state.workflow_running = False
 
 
+# HTML Generation - extracted to services/html_generator.py
+from services import HtmlGenerator
+
 def generate_ecommerce_html(
     product_data: Dict[str, Any],
     faq_data: Dict[str, Any],
     comparison_data: Dict[str, Any]
 ) -> str:
-    """Generate minimal modern ecommerce preview HTML with fully dynamic content."""
-    product = product_data.get("product", {})
-    product_a = comparison_data.get("products", {}).get("product_a", {})
-    product_b = comparison_data.get("products", {}).get("product_b", {})
-    questions = faq_data.get("questions", [])
+    """Generate minimal modern ecommerce preview HTML with fully dynamic content.
     
-    # Get product name and basic info
-    name = product.get('name') or product_a.get('name') or 'Product'
-    product_type = product.get('product_type') or product_a.get('product_type') or ''
-    price = product.get('price', {}).get('amount') if isinstance(product.get('price'), dict) else product_a.get('price', '')
-    target = product.get('suitable_for', []) or product_a.get('target_users', [])
-    
-    # Get product description (short version)
-    description = product.get('headline') or product.get('tagline') or ''
-    if not description:
-        benefits_list = product.get('benefits', {})
-        if isinstance(benefits_list, dict):
-            primary = benefits_list.get('primary_benefits', [])
-            if primary:
-                description = ' • '.join(primary[:2])
-        elif isinstance(benefits_list, list) and benefits_list:
-            description = ' • '.join(benefits_list[:2])
-    
-    # Get LLM-enriched benefits data
-    benefits_data = product.get('benefits', {})
-    if isinstance(benefits_data, dict):
-        detailed_benefits = benefits_data.get('detailed_benefits', [])
-        benefits_html = ''
-        for item in detailed_benefits:
-            benefit = item.get('benefit', '')
-            desc = item.get('description', '')
-            benefits_html += f'<li><strong>{benefit}</strong> — {desc}</li>'
-        if not benefits_html:
-            primary = benefits_data.get('primary_benefits', [])
-            benefits_html = ''.join([f'<li>{b}</li>' for b in primary])
-    else:
-        benefits_html = ''.join([f'<li>{b}</li>' for b in benefits_data]) if benefits_data else '<li>Quality product</li>'
-    
-    # Get LLM-enriched features/ingredients data
-    ingredients_data = product.get('ingredients', {})
-    if isinstance(ingredients_data, dict):
-        feature_details = ingredients_data.get('feature_details', [])
-        features_html = ''
-        for item in feature_details:
-            features_html += f'<span class="tag">{item.get("name", "")}</span>'
-        if not features_html:
-            features = ingredients_data.get('key_features', [])
-            features_html = ''.join([f'<span class="tag">{f}</span>' for f in features])
-    else:
-        features_html = ''
-    
-    # Get LLM-enriched usage data
-    usage_data = product.get('how_to_use', {})
-    if isinstance(usage_data, dict):
-        expanded = usage_data.get('expanded_instructions', {})
-        steps = expanded.get('steps', [])
-        tips = expanded.get('tips', [])
-        if steps:
-            usage_html = '<ol style="text-align:left;max-width:600px;margin:0 auto;">'
-            for step in steps:
-                usage_html += f'<li style="margin:8px 0;">{step}</li>'
-            usage_html += '</ol>'
-            if tips:
-                usage_html += '<p style="margin-top:16px;font-size:0.9rem;color:#888;"><strong>Pro Tips:</strong></p><ul style="text-align:left;max-width:600px;margin:0 auto;color:#888;">'
-                for tip in tips:
-                    usage_html += f'<li style="margin:4px 0;">{tip}</li>'
-                usage_html += '</ul>'
-        else:
-            usage_html = f'<p>{usage_data.get("summary", "")}</p>'
-    else:
-        usage_html = f'<p>{usage_data}</p>'
-    
-    # Build target HTML
-    target_html = ', '.join(target) if target else 'Everyone'
-    
-    # Build FAQ HTML with collapsible items
-    faq_html = ''
-    for q in questions[:5]:
-        faq_html += f'''
-        <details class="faq-item">
-            <summary class="faq-q">{q.get('question', '')}</summary>
-            <div class="faq-a">{q.get('answer', '')}</div>
-        </details>'''
-    
-    html = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{name}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Inter', sans-serif; background: #fff; color: #111; line-height: 1.7; }}
+    .. deprecated::
+        This function is deprecated and maintained only for backward compatibility.
+        Use HtmlGenerator.generate() directly instead:
         
-        /* Hero */
-        .hero {{ padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); }}
-        .hero h1 {{ font-size: 2.8rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px; }}
-        .hero .tagline {{ color: #10b981; font-size: 1rem; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }}
-        .hero .desc {{ color: #555; font-size: 1.1rem; max-width: 550px; margin: 0 auto 20px; }}
-        .hero .price {{ font-size: 1.8rem; font-weight: 700; color: #111; }}
-        
-        /* Container */
-        .container {{ max-width: 800px; margin: 0 auto; padding: 60px 20px; }}
-        .section-title {{ font-size: 1.4rem; font-weight: 700; margin-bottom: 28px; text-align: center; letter-spacing: -0.3px; }}
-        
-        /* Tags */
-        .tags {{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; }}
-        .tag {{ background: #fff; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }}
-        
-        /* Benefits */
-        .benefits ul {{ list-style: none; max-width: 650px; margin: 0 auto; }}
-        .benefits li {{ padding: 14px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; }}
-        .benefits li strong {{ color: #10b981; font-weight: 600; }}
-        
-        /* Usage */
-        .usage {{ background: #f8f9fa; padding: 50px 20px; text-align: center; }}
-        .usage p {{ color: #555; max-width: 600px; margin: 0 auto; font-size: 0.95rem; }}
-        
-        /* Comparison */
-        .comparison {{ background: #111; color: #fff; padding: 60px 20px; }}
-        .comparison .section-title {{ color: #fff; }}
-        .comp-table {{ max-width: 850px; margin: 0 auto; }}
-        .comp-row {{ display: grid; grid-template-columns: 140px 1fr 1fr; padding: 14px 8px; border-bottom: 1px solid #333; font-size: 0.9rem; }}
-        .comp-row:first-child {{ font-weight: 600; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }}
-        .comp-row span {{ color: #10b981; font-size: 0.7rem; }}
-        .comp-row div:first-child {{ color: #aaa; font-weight: 500; }}
-        
-        /* FAQ - Collapsible */
-        .faq {{ padding: 60px 20px; background: #fafafa; }}
-        .faq-item {{ max-width: 700px; margin: 0 auto 12px; background: #fff; border-radius: 10px; border: 1px solid #eee; overflow: hidden; }}
-        .faq-item summary {{ padding: 18px 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }}
-        .faq-item summary::-webkit-details-marker {{ display: none; }}
-        .faq-item summary::after {{ content: "+"; font-size: 1.2rem; color: #888; }}
-        .faq-item[open] summary::after {{ content: "−"; }}
-        .faq-item[open] summary {{ border-bottom: 1px solid #eee; }}
-        .faq-a {{ padding: 16px 20px; color: #555; font-size: 0.9rem; line-height: 1.6; }}
-        
-        /* Footer */
-        footer {{ text-align: center; padding: 30px; color: #888; font-size: 0.8rem; }}
-    </style>
-</head>
-<body>
-    <section class="hero">
-        <p class="tagline">{product_type}</p>
-        <h1>{name}</h1>
-        <p class="desc">{description}</p>
-        <div class="tags">{features_html}</div>
-        <div class="price">{price}</div>
-    </section>
+            from services import HtmlGenerator
+            generator = HtmlGenerator()
+            html = generator.generate(product_data, faq_data, comparison_data)
     
-    <div class="container benefits">
-        <h2 class="section-title">Benefits</h2>
-        <ul>{benefits_html}</ul>
-    </div>
-    
-    <section class="usage">
-        <h2 class="section-title">How to Use</h2>
-        {usage_html}
-        <p style="margin-top: 14px; font-size: 0.85rem;"><strong>Best for:</strong> {target_html}</p>
-    </section>
-    
-    <section class="comparison">
-        <h2 class="section-title">Compare Options</h2>
-        <div class="comp-table">
-            <div class="comp-row">
-                <div>Feature</div>
-                <div>{product_a.get('name', 'Our Product')}<br><span>Main</span></div>
-                <div>{product_b.get('name', 'Alternative')}<br><span>Alternative</span></div>
-            </div>
-            <div class="comp-row">
-                <div>Type</div>
-                <div>{product_a.get('product_type', '-')}</div>
-                <div>{product_b.get('product_type', '-')}</div>
-            </div>
-            <div class="comp-row">
-                <div>Price</div>
-                <div>{product_a.get('price', '-')}</div>
-                <div>{product_b.get('price', '-')}</div>
-            </div>
-            <div class="comp-row">
-                <div>Best for</div>
-                <div>{', '.join(product_a.get('target_users', []))}</div>
-                <div>{', '.join(product_b.get('target_users', []))}</div>
-            </div>
-            <div class="comp-row">
-                <div>Key Features</div>
-                <div>{', '.join(product_a.get('key_features', []))}</div>
-                <div>{', '.join(product_b.get('key_features', []))}</div>
-            </div>
-            <div class="comp-row">
-                <div>Benefits</div>
-                <div>{', '.join(product_a.get('benefits', []))}</div>
-                <div>{', '.join(product_b.get('benefits', []))}</div>
-            </div>
-            <div class="comp-row">
-                <div>Considerations</div>
-                <div>{product_a.get('considerations', '-')}</div>
-                <div>{product_b.get('considerations', '-')}</div>
-            </div>
-        </div>
-    </section>
-    
-    <section class="faq">
-        <h2 class="section-title">FAQ</h2>
-        {faq_html if faq_html else '<p style="text-align:center;color:#888;">No FAQs generated</p>'}
-    </section>
-    
-    <footer>
-        Generated by Multi-Agent Content System • Powered by LangGraph + Groq
-    </footer>
-</body>
-</html>'''
-    return html
+    Args:
+        product_data: Product page JSON data
+        faq_data: FAQ page JSON data  
+        comparison_data: Comparison page JSON data
+        
+    Returns:
+        Complete HTML document as string
+    """
+    generator = HtmlGenerator()
+    return generator.generate(product_data, faq_data, comparison_data)
 
 
 def display_results():
@@ -448,7 +257,7 @@ def display_results():
         with open(comparison_path, 'r') as f:
             comparison_data = json.load(f)
     
-    # Metrics
+    # Basic Metrics
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Questions", len(results.get("questions", [])))
@@ -459,13 +268,28 @@ def display_results():
     with col4:
         st.metric("Errors", len(results.get("errors", [])))
     
+    # Observability Metrics (if available)
+    workflow_metrics = results.get("metrics", {})
+    if workflow_metrics:
+        st.markdown("#### 📊 Workflow Metrics")
+        metrics_cols = st.columns(len(workflow_metrics) if len(workflow_metrics) <= 4 else 4)
+        for idx, (node_name, node_metrics) in enumerate(workflow_metrics.items()):
+            col = metrics_cols[idx % len(metrics_cols)]
+            with col:
+                tokens_in = node_metrics.get("tokens_in", 0)
+                tokens_out = node_metrics.get("tokens_out", 0)
+                elapsed = node_metrics.get("elapsed_s", 0)
+                st.markdown(f"**{node_name}**")
+                st.caption(f"~{tokens_in} in / ~{tokens_out} out | {elapsed:.1f}s")
+    
     st.markdown("---")
     
     # Preview Button
     st.markdown("### 🌐 Ecommerce Preview")
     
-    # Generate and save HTML preview
-    html_content = generate_ecommerce_html(product_data, faq_data, comparison_data)
+    # Generate and save HTML preview using HtmlGenerator directly
+    generator = HtmlGenerator()
+    html_content = generator.generate(product_data, faq_data, comparison_data)
     preview_path = os.path.join(output_dir, "preview.html")
     with open(preview_path, 'w', encoding='utf-8') as f:
         f.write(html_content)
