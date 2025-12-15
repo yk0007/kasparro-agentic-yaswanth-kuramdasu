@@ -105,14 +105,32 @@ class ProductPageAgent:
             return {}, errors, agent_metrics
     
     def _generate_all_blocks(self, product: ProductModel) -> Dict[str, Any]:
-        """Generate all logic blocks for the product page."""
+        """Generate all logic blocks for the product page with cross-block analysis."""
+        from logic_blocks.cross_block_analyzer import (
+            analyze_benefit_safety_conflicts,
+            analyze_ingredient_benefit_links
+        )
+        
         logger.debug(f"{self.name}: Generating logic blocks")
         
+        benefits = generate_benefits_block(product)
+        usage = generate_usage_block(product)
+        ingredients = generate_ingredients_block(product)
+        safety = generate_safety_block(product)
+        
+        # Cross-block analysis for deeper insights
+        benefit_safety = analyze_benefit_safety_conflicts(benefits, safety)
+        ingredient_benefits = analyze_ingredient_benefit_links(ingredients, benefits)
+        
         return {
-            "benefits_block": generate_benefits_block(product),
-            "usage_block": generate_usage_block(product),
-            "ingredients_block": generate_ingredients_block(product),
-            "safety_block": generate_safety_block(product)
+            "benefits_block": benefits,
+            "usage_block": usage,
+            "ingredients_block": ingredients,
+            "safety_block": safety,
+            "cross_block_analysis": {
+                "benefit_safety_conflicts": benefit_safety,
+                "ingredient_benefit_links": ingredient_benefits
+            }
         }
     
     def _generate_tagline(self, product: ProductModel) -> str:

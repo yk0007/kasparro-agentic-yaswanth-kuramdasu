@@ -277,6 +277,95 @@ def comparison_node(state: WorkflowState) -> Dict[str, Any]:
     return updates
 
 
+def validate_content_node(state: WorkflowState) -> Dict[str, Any]:
+    """
+    Node: Validate that all required content exists before output.
+    
+    This is an explicit quality gate that ensures all 3 content types
+    (FAQ, Product, Comparison) are present and have required structure
+    before the output_node writes JSON files.
+    
+    Returns:
+        State updates with validation status in 'content_valid' field
+    """
+    logger.info("🔄 Content Validation: Starting quality gate check")
+    
+    errors_found = []
+    
+    # Check FAQ content
+    faq_content = state.get("faq_content", {})
+    if not faq_content:
+        errors_found.append("FAQ content is missing")
+    elif not faq_content.get("questions"):
+        errors_found.append("FAQ content has no questions")
+    elif len(faq_content.get("questions", [])) < 15:
+        actual = len(faq_content.get("questions", []))
+        errors_found.append(f"FAQ has only {actual} questions (minimum 15 required)")
+    
+    # Check Product content
+    product_content = state.get("product_content", {})
+    if not product_content:
+        errors_found.append("Product content is missing")
+    elif not product_content.get("product"):
+        errors_found.append("Product content has no product data")
+    
+    # Check Comparison content
+    comparison_content = state.get("comparison_content", {})
+    if not comparison_content:
+        errors_found.append("Comparison content is missing")
+    elif not comparison_content.get("products"):
+        errors_found.append("Comparison content has no products data")
+    
+    # Check for existing workflow errors
+    existing_errors = state.get("errors", [])
+    
+    if errors_found or existing_errors:
+        all_errors = list(existing_errors) + errors_found
+        logger.warning(f"❌ Content Validation Failed: {len(all_errors)} issues found")
+        return {
+            "current_step": "validation_failed",
+            "errors": all_errors,
+            "logs": [
+                f"{datetime.now().isoformat()} - Content Validation: FAILED - {len(all_errors)} issues"
+            ]
+        }
+    
+    logger.info("✅ Content Validation: All content passed quality gates")
+    return {
+        "current_step": "validated",
+        "logs": [
+            f"{datetime.now().isoformat()} - Content Validation: PASSED"
+        ]
+    }
+
+
+def should_output(state: WorkflowState) -> str:
+    """
+    Routing function: Determine if output should be generated.
+    
+    Returns 'output' to proceed with file generation, or 'end' to skip output
+    when validation has failed or errors exist.
+    
+    Args:
+        state: Current workflow state
+        
+    Returns:
+        'output' if content is valid, 'end' otherwise
+    """
+    # Check for explicit validation failure
+    if state.get("current_step") == "validation_failed":
+        logger.info("Routing: Skipping output due to validation failure")
+        return "end"
+    
+    # Check for any errors in state
+    if state.get("errors"):
+        logger.info("Routing: Skipping output due to workflow errors")
+        return "end"
+    
+    logger.info("Routing: Proceeding to output")
+    return "output"
+
+
 def output_node(state: WorkflowState) -> Dict[str, Any]:
     """Node: Format and save JSON outputs.
 
@@ -285,6 +374,8 @@ def output_node(state: WorkflowState) -> Dict[str, Any]:
     - If some pages are available (e.g., FAQ and Product succeed but Comparison fails),
       it writes whatever validates successfully and marks the step as completed
       when at least one file is produced.
+    
+    Also checks for quality issues and logs them explicitly.
     """
     logger.info("🔄 Output Agent: Starting")
 
@@ -292,6 +383,30 @@ def output_node(state: WorkflowState) -> Dict[str, Any]:
     faq_content = state.get("faq_content")
     product_content = state.get("product_content")
     comparison_content = state.get("comparison_content")
+    
+    # Check for quality issues
+    quality_issues = []
+    
+    # Check FAQ quality
+    if faq_content:
+        faq_count = len(faq_content.get("questions", []))
+        if faq_count < 15:
+            quality_issues.append(f"FAQ has only {faq_count} items (minimum 15 required)")
+        
+        # Check for safety warnings
+        safety_block = faq_content.get("blocks", {}).get("safety_block", {})
+        if not safety_block.get("usage_warnings") and not safety_block.get("suitability_flags"):
+            quality_issues.append("FAQ safety block has no warnings or suitability flags")
+    
+    # Check Product quality
+    if product_content:
+        if not product_content.get("product"):
+            quality_issues.append("Product content missing product data")
+    
+    # Check Comparison quality
+    if comparison_content:
+        if not comparison_content.get("products"):
+            quality_issues.append("Comparison content missing products data")
 
     # If we truly have nothing to write, skip entirely.
     if not any([faq_content, product_content, comparison_content]):
@@ -320,6 +435,13 @@ def output_node(state: WorkflowState) -> Dict[str, Any]:
             f"{datetime.now().isoformat()} - Output Agent: Generated {len(output_files)} files"
         ],
     }
+    
+    # Log quality issues if any
+    if quality_issues:
+        logger.warning(f"⚠️ Output Agent: Quality issues detected: {quality_issues}")
+        updates["logs"].append(
+            f"{datetime.now().isoformat()} - Output Agent: Quality issues: {'; '.join(quality_issues)}"
+        )
 
     # Merge workflow-level errors with any OutputAgent-specific errors
     merged_errors = []
@@ -331,9 +453,10 @@ def output_node(state: WorkflowState) -> Dict[str, Any]:
         updates["errors"] = merged_errors
 
     logger.info(
-        "✅ Output Agent: Generated %d files (partial_outputs=%s)",
+        "✅ Output Agent: Generated %d files (partial_outputs=%s, quality_issues=%d)",
         len(output_files),
         bool(errors),
+        len(quality_issues),
     )
     return updates
 
@@ -346,18 +469,27 @@ def output_node(state: WorkflowState) -> Dict[str, Any]:
 
 def create_workflow() -> StateGraph:
     """
-    Create the LangGraph StateGraph workflow.
+    Create the LangGraph StateGraph workflow with explicit quality gates.
     
     Workflow pattern:
-    START -> parse -> generate_questions -> [faq, product, comparison] -> output -> END
+    START -> parse -> generate_questions -> [faq, product, comparison] -> validate_content -> output/END
     
-    The FAQ, Product, and Comparison nodes run after questions are generated,
-    then all converge to the Output node.
+    The workflow includes:
+    1. Sequential: parse -> generate_questions
+    2. Fan-out (PARALLEL): generate_questions -> [faq, product_page, comparison]
+    3. Fan-in: All 3 converge to validate_content
+    4. Conditional routing: validate_content -> output (if valid) OR END (if errors)
+    5. Final: output -> END
+    
+    This design ensures:
+    - Parallel execution for content generation agents
+    - Explicit quality gate before writing output files
+    - No output written if validation fails (fail-fast)
     
     Returns:
         Compiled StateGraph workflow
     """
-    logger.info("Creating LangGraph workflow")
+    logger.info("Creating LangGraph workflow with explicit quality gates")
     
     # Create the graph
     workflow = StateGraph(WorkflowState)
@@ -368,35 +500,44 @@ def create_workflow() -> StateGraph:
     workflow.add_node("faq", faq_node)
     workflow.add_node("product_page", product_page_node)
     workflow.add_node("comparison", comparison_node)
+    workflow.add_node("validate_content", validate_content_node)  # Quality gate
     workflow.add_node("output", output_node)
     
     # Set entry point
     workflow.set_entry_point("parse")
     
-    # Add edges - PARALLEL fan-out/fan-in pattern
-    # START -> parse -> generate_questions -> [faq, product_page, comparison] -> output -> END
-    # 
-    # After questions are generated, FAQ/Product/Comparison run in PARALLEL,
-    # then all converge to the Output node.
-    
+    # Sequential edges: START -> parse -> generate_questions
     workflow.add_edge("parse", "generate_questions")
     
     # Fan-out: generate_questions -> 3 parallel agents
+    # These run in PARALLEL after questions are generated
     workflow.add_edge("generate_questions", "faq")
     workflow.add_edge("generate_questions", "product_page")
     workflow.add_edge("generate_questions", "comparison")
     
-    # Fan-in: all 3 agents converge to output
-    workflow.add_edge("faq", "output")
-    workflow.add_edge("product_page", "output")
-    workflow.add_edge("comparison", "output")
+    # Fan-in: all 3 agents converge to validate_content (quality gate)
+    workflow.add_edge("faq", "validate_content")
+    workflow.add_edge("product_page", "validate_content")
+    workflow.add_edge("comparison", "validate_content")
     
+    # Conditional routing: validate_content -> output OR END
+    # Uses should_output() routing function to decide
+    workflow.add_conditional_edges(
+        "validate_content",
+        should_output,
+        {
+            "output": "output",
+            "end": END
+        }
+    )
+    
+    # Final edge: output -> END
     workflow.add_edge("output", END)
     
     # Compile the graph
     compiled = workflow.compile()
     
-    logger.info("Workflow created successfully with parallel execution pattern")
+    logger.info("Workflow created successfully with parallel execution and quality gates")
     return compiled
 
 
@@ -428,11 +569,12 @@ def run_workflow(
     
     # Node-to-progress percentage mapping
     NODE_PROGRESS = {
-        "parse": ("Parser Agent", 0.20),
-        "generate_questions": ("Question Generator", 0.40),
-        "faq": ("FAQ Agent", 0.60),
-        "product_page": ("Product Page Agent", 0.80),
-        "comparison": ("Comparison Agent", 0.95),
+        "parse": ("Parser Agent", 0.15),
+        "generate_questions": ("Question Generator", 0.30),
+        "faq": ("FAQ Agent", 0.50),
+        "product_page": ("Product Page Agent", 0.65),
+        "comparison": ("Comparison Agent", 0.80),
+        "validate_content": ("Content Validation", 0.90),
         "output": ("Output Agent", 0.98),
     }
     

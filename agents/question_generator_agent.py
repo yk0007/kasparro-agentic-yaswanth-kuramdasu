@@ -81,8 +81,9 @@ class QuestionGeneratorAgent:
         """
         Generate categorized questions for the product.
         
-        Uses Groq LLM with automatic API key rotation to generate 
-        at least 15 questions across 5 different categories.
+        Uses Groq LLM to generate at least 15 questions across 5 different 
+        categories. Includes automatic retry logic with LLM regeneration and 
+        template-based fallback to meet minimum question count.
         
         Args:
             product: Validated ProductModel
@@ -259,13 +260,114 @@ IMPORTANT:
         product: ProductModel, 
         existing: List[QuestionModel]
     ) -> List[QuestionModel]:
-        """Generate additional questions to meet minimum requirement."""
-        additional = []
+        """
+        Generate additional questions to meet minimum requirement.
+        
+        Uses a regeneration loop:
+        1. First tries LLM-based regeneration with exclusion list
+        2. Falls back to template-based questions if LLM fails
+        
+        Args:
+            product: Product model
+            existing: List of already generated questions
+            
+        Returns:
+            List of additional questions needed to meet min_questions
+        """
         existing_count = len(existing)
         needed = self.min_questions - existing_count
         
         if needed <= 0:
-            return additional
+            return []
+        
+        logger.info(f"{self.name}: Need {needed} more questions, attempting LLM regeneration")
+        
+        # Step 1: Try LLM-based regeneration with exclusion list
+        try:
+            existing_questions = [q.question for q in existing]
+            additional = self._regenerate_with_llm(product, existing_questions, needed)
+            if len(additional) >= needed:
+                logger.info(f"{self.name}: LLM regeneration successful, got {len(additional)} questions")
+                return additional[:needed]
+        except Exception as e:
+            logger.warning(f"{self.name}: LLM regeneration failed: {e}, using templates")
+        
+        # Step 2: Fall back to template-based questions
+        logger.info(f"{self.name}: Using template-based fallback for {needed} questions")
+        return self._template_fallback_questions(product, existing_count, needed)
+    
+    def _regenerate_with_llm(
+        self,
+        product: ProductModel,
+        existing_questions: List[str],
+        count: int
+    ) -> List[QuestionModel]:
+        """
+        Regenerate questions using LLM with exclusion list.
+        
+        Args:
+            product: Product model
+            existing_questions: List of questions to exclude
+            count: Number of new questions needed
+            
+        Returns:
+            List of new QuestionModels
+        """
+        exclusion_list = "\n".join(f"- {q}" for q in existing_questions[:10])  # Limit to 10 for prompt size
+        
+        prompt = f"""Generate {count} ADDITIONAL user questions about this product.
+These questions must be DIFFERENT from the existing ones listed below.
+
+Product: {product.name}
+Type: {product.product_type}
+Key Features: {', '.join(product.key_features)}
+Benefits: {', '.join(product.benefits)}
+Price: {product.price}
+
+EXISTING QUESTIONS (do NOT repeat these):
+{exclusion_list}
+
+Generate {count} NEW questions across categories: Informational, Safety, Usage, Purchase, Comparison.
+Output ONLY a JSON array: [{{"category": "X", "question": "Y?"}}]"""
+
+        response = invoke_with_retry(prompt)
+        response = response.strip()
+        
+        # Clean markdown fences
+        if "```" in response:
+            response = response.split("```")[1]
+            if response.startswith("json"):
+                response = response[4:]
+        response = response.strip()
+        
+        # Robust JSON extraction
+        import re
+        json_match = re.search(r'\[.*\]', response, re.DOTALL)
+        if json_match:
+            response = json_match.group()
+        
+        data = json.loads(response)
+        
+        questions = []
+        for i, item in enumerate(data):
+            if isinstance(item, dict) and "question" in item:
+                category = _to_question_category(item.get("category", "Informational"))
+                questions.append(QuestionModel(
+                    id=f"q_regen_{i+1}",
+                    category=category,
+                    question=item["question"]
+                ))
+        
+        return questions
+    
+    def _template_fallback_questions(
+        self,
+        product: ProductModel,
+        existing_count: int,
+        needed: int
+    ) -> List[QuestionModel]:
+        """Generate template-based fallback questions."""
+        additional = []
         
         # Template questions by category (generic for any product type)
         templates = {
@@ -311,11 +413,14 @@ IMPORTANT:
         return additional[:needed]
     
     def _generate_fallback_questions(self, product: ProductModel) -> List[QuestionModel]:
-        """Generate fallback questions using LLM if main generation fails."""
-        logger.info(f"{self.name}: Generating fallback questions via LLM")
+        """Generate fallback questions using LLM with retry logic."""
+        logger.info(f"{self.name}: Generating fallback questions via LLM with retry")
         
-        try:
-            prompt = f"""Generate 15 simple user questions about "{product.name}".
+        max_attempts = 3
+        
+        for attempt in range(max_attempts):
+            try:
+                prompt = f"""Generate 15 simple user questions about "{product.name}".
 
 Product: {product.name}
 Type: {product.product_type}
@@ -328,38 +433,60 @@ Categories: Informational, Safety, Usage, Purchase, Comparison (3 each)
 Output JSON array: [{{"category": "X", "question": "Y?"}}]
 Output ONLY valid JSON array."""
 
-            response = invoke_with_retry(prompt).strip()
-            
-            if "```" in response:
-                response = response.split("```")[1]
-                if response.startswith("json"):
-                    response = response[4:]
-            response = response.strip()
-            
-            import json
-            data = json.loads(response)
-            
-            questions = []
-            for i, item in enumerate(data):
-                cat = item.get("category", "Informational")
-                q = item.get("question", "")
-                if q:
-                    try:
-                        category = QuestionCategory[cat.upper()]
-                    except KeyError:
-                        category = QuestionCategory.INFORMATIONAL
-                    questions.append(QuestionModel(id=f"q{i+1}", category=category, question=q))
-            
-            return questions[:15]
-            
-        except Exception as e:
-            logger.warning(f"{self.name}: LLM fallback failed: {e}, using minimal questions")
-            # Absolute minimal fallback
-            return [
-                QuestionModel(id="q1", category=QuestionCategory.INFORMATIONAL, question=f"What is {product.name}?"),
-                QuestionModel(id="q2", category=QuestionCategory.INFORMATIONAL, question=f"What does {product.name} do?"),
-                QuestionModel(id="q3", category=QuestionCategory.USAGE, question=f"How do I use {product.name}?"),
-                QuestionModel(id="q4", category=QuestionCategory.PURCHASE, question=f"What is the price of {product.name}?"),
-                QuestionModel(id="q5", category=QuestionCategory.SAFETY, question=f"Are there any issues with {product.name}?"),
-            ]
+                response = invoke_with_retry(prompt).strip()
+                
+                if "```" in response:
+                    response = response.split("```")[1]
+                    if response.startswith("json"):
+                        response = response[4:]
+                response = response.strip()
+                
+                import json
+                data = json.loads(response)
+                
+                questions = []
+                for i, item in enumerate(data):
+                    cat = item.get("category", "Informational")
+                    q = item.get("question", "")
+                    if q:
+                        try:
+                            category = QuestionCategory[cat.upper()]
+                        except KeyError:
+                            category = QuestionCategory.INFORMATIONAL
+                        questions.append(QuestionModel(id=f"q{i+1}", category=category, question=q))
+                
+                # Validate we got enough questions
+                if len(questions) >= 15:
+                    logger.info(f"{self.name}: Fallback generated {len(questions)} questions")
+                    return questions[:15]
+                else:
+                    logger.warning(f"{self.name}: Fallback attempt {attempt+1} only got {len(questions)} questions")
+                    if attempt < max_attempts - 1:
+                        continue  # Retry
+                    
+            except Exception as e:
+                logger.warning(f"{self.name}: Fallback attempt {attempt+1} failed: {e}")
+                if attempt < max_attempts - 1:
+                    continue  # Retry
+        
+        # Absolute minimal fallback with 15 questions (only if all retries fail)
+        logger.warning(f"{self.name}: All fallback attempts failed, using template questions")
+        return [
+            QuestionModel(id="q1", category=QuestionCategory.INFORMATIONAL, question=f"What is {product.name}?"),
+            QuestionModel(id="q2", category=QuestionCategory.INFORMATIONAL, question=f"What does {product.name} do?"),
+            QuestionModel(id="q3", category=QuestionCategory.INFORMATIONAL, question=f"What are the key features of {product.name}?"),
+            QuestionModel(id="q4", category=QuestionCategory.USAGE, question=f"How do I use {product.name}?"),
+            QuestionModel(id="q5", category=QuestionCategory.USAGE, question=f"How often should I use {product.name}?"),
+            QuestionModel(id="q6", category=QuestionCategory.USAGE, question=f"When is the best time to use {product.name}?"),
+            QuestionModel(id="q7", category=QuestionCategory.SAFETY, question=f"Are there any issues with {product.name}?"),
+            QuestionModel(id="q8", category=QuestionCategory.SAFETY, question=f"Who should not use {product.name}?"),
+            QuestionModel(id="q9", category=QuestionCategory.SAFETY, question=f"What precautions should I take with {product.name}?"),
+            QuestionModel(id="q10", category=QuestionCategory.PURCHASE, question=f"What is the price of {product.name}?"),
+            QuestionModel(id="q11", category=QuestionCategory.PURCHASE, question=f"Is {product.name} worth the price?"),
+            QuestionModel(id="q12", category=QuestionCategory.PURCHASE, question=f"Where can I buy {product.name}?"),
+            QuestionModel(id="q13", category=QuestionCategory.COMPARISON, question=f"How does {product.name} compare to alternatives?"),
+            QuestionModel(id="q14", category=QuestionCategory.COMPARISON, question=f"What makes {product.name} different from competitors?"),
+            QuestionModel(id="q15", category=QuestionCategory.COMPARISON, question=f"Is {product.name} better than similar products?"),
+        ]
+
 

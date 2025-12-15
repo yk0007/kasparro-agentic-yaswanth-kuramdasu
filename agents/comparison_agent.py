@@ -201,13 +201,42 @@ Output ONLY the JSON, no other text."""
         product_a: ProductModel, 
         product_b: ProductModel
     ) -> Dict[str, Any]:
-        """Generate comparison logic blocks."""
+        """Generate comparison logic blocks with cross-block analysis."""
+        from logic_blocks import (
+            generate_benefits_block, 
+            generate_safety_block
+        )
+        from logic_blocks.cross_block_analyzer import (
+            analyze_benefit_safety_conflicts,
+            generate_cross_block_summary
+        )
+        
         logger.debug(f"{self.name}: Generating comparison blocks")
+        
+        # Generate individual blocks for both products
+        benefits_a = generate_benefits_block(product_a)
+        safety_a = generate_safety_block(product_a)
+        benefits_b = generate_benefits_block(product_b)
+        safety_b = generate_safety_block(product_b)
+        
+        # Cross-block analysis for both products
+        conflicts_a = analyze_benefit_safety_conflicts(benefits_a, safety_a)
+        conflicts_b = analyze_benefit_safety_conflicts(benefits_b, safety_b)
         
         return {
             "compare_ingredients_block": compare_ingredients_block(product_a, product_b),
             "compare_benefits_block": compare_benefits_block(product_a, product_b),
-            "pricing_block": generate_pricing_block(product_a, product_b)
+            "pricing_block": generate_pricing_block(product_a, product_b),
+            "cross_block_analysis": {
+                "product_a": {
+                    "benefit_safety_conflicts": conflicts_a,
+                    "risk_benefit_ratio": conflicts_a.get("risk_benefit_ratio", 5.0)
+                },
+                "product_b": {
+                    "benefit_safety_conflicts": conflicts_b,
+                    "risk_benefit_ratio": conflicts_b.get("risk_benefit_ratio", 5.0)
+                }
+            }
         }
     
     def _build_comparison(

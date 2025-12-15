@@ -5,27 +5,53 @@ A production-grade agentic automation system that generates structured, machine-
 ## 🚀 Features
 
 - **6 Specialized Agents**: Parser, Question Generator, FAQ, Product Page, Comparison, Output
-- **LangGraph Orchestration**: StateGraph-based workflow using `compiled.invoke()`
-- **LLM-Powered Logic Blocks**: Dynamic content generation for any product type
+- **LangGraph Orchestration**: StateGraph with parallel fan-out/fan-in execution
+- **7 Logic Blocks**: Including cross-block analyzer with impact scoring & risk assessment
+- **Quality Gates**: validate_content_node with conditional routing (pass OR fail-fast)
+- **Hard Validation**: Template validation strictly enforced - no fallback outputs
 - **Groq LLM Provider**: Fast generation with llama-3.3-70b-versatile
+- **API Key Rotation**: Multi-key support with automatic retry on rate limits
 - **Custom Template Engine**: Class-based templates with validation
 - **Streamlit Demo UI**: Interactive interface for content generation
 - **Machine-Readable Output**: 3 JSON files (FAQ, Product, Comparison)
-- **15+ FAQ Questions**: Generates comprehensive FAQ content
-- **Test Suite**: 23 unit and integration tests included
+- **15+ FAQ Questions**: With deduplication, scoring, and LLM regeneration loop
+- **Test Suite**: 68 unit and integration tests included
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    LangGraph StateGraph                     │
+├─────────────────────────────────────────────────────────────┤
+│  parse → generate_questions ─┬→ faq ──────────┐            │
+│                              ├→ product_page ─┼→ validate  │
+│                              └→ comparison ───┘    ↓       │
+│                                              ┌─────┴─────┐  │
+│                                              │  output   │  │
+│                                              │    OR     │  │
+│                                              │   END     │  │
+│                                              └───────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Workflow Features:**
+
+- **Fan-out**: 3 agents run in parallel after question generation
+- **Fan-in**: All converge to `validate_content_node`
+- **Conditional Routing**: Routes to `output` (success) OR `END` (fail-fast)
 
 ## 📁 Project Structure
 
 ```
 ├── agents/             # 6 agent implementations
-├── logic_blocks/       # LLM-powered content generation
-├── templates/          # Template engine
-├── orchestrator/       # LangGraph workflow
-├── tests/              # Unit and integration tests
+├── logic_blocks/       # 7 blocks (benefits, safety, cross_block_analyzer, etc.)
+├── templates/          # Template engine with hard validation
+├── orchestrator/       # LangGraph workflow with quality gates
+├── tests/              # 68 unit and integration tests
 ├── output/             # Generated JSON files
 ├── docs/               # Documentation
 ├── models.py           # Pydantic data models
-├── config.py           # Groq configuration
+├── config.py           # Groq config with API key rotation
 ├── utils.py            # Utility functions
 ├── app.py              # Streamlit UI
 └── requirements.txt    # Dependencies
@@ -89,14 +115,16 @@ streamlit run app.py
 ## ✅ Running Tests
 
 ```bash
-pytest tests/ -v
+python3 -m pytest tests/ -v
 ```
 
-All 23 tests should pass, verifying:
+All 68 tests verify:
 
-- LangGraph uses `compiled.invoke()`
-- No external search is used
-- FAQ generates 15+ questions
+- **Assignment Requirements**: Product parsing, question generation, templates, logic blocks
+- **Workflow Integration**: LangGraph uses parallel fan-out/fan-in
+- **Workflow Resilience**: Error handling, fail-fast behavior, recovery state
+- **No External Search**: Only internal data used
+- **FAQ Generation**: 15+ questions with deduplication and scoring
 
 ## 🔧 Example Input
 

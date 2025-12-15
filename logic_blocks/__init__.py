@@ -18,6 +18,11 @@ from logic_blocks.comparison_blocks import (
     compare_benefits_block,
     generate_pricing_block
 )
+from logic_blocks.cross_block_analyzer import (
+    analyze_benefit_safety_conflicts,
+    analyze_ingredient_benefit_links,
+    generate_cross_block_summary
+)
 
 __all__ = [
     "generate_benefits_block",
@@ -26,5 +31,8 @@ __all__ = [
     "generate_safety_block",
     "compare_ingredients_block",
     "compare_benefits_block",
-    "generate_pricing_block"
+    "generate_pricing_block",
+    "analyze_benefit_safety_conflicts",
+    "analyze_ingredient_benefit_links",
+    "generate_cross_block_summary"
 ]

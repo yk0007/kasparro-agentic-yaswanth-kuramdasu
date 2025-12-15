@@ -109,100 +109,48 @@ class OutputAgent:
         return output_files, errors
     
     def _process_faq(self, content: Dict[str, Any]) -> str:
-        """Process and save FAQ content using template."""
+        """Process and save FAQ content using template with strict validation."""
         template = FAQTemplate()
         # Use .get() instead of .pop() to avoid mutating original content
         blocks = content.get("blocks", {})
         content_copy = {k: v for k, v in content.items() if k != "blocks"}
         
-        try:
-            output = template.render(content_copy, blocks)
-        except ValueError as e:
-            error_msg = str(e)
-            # Enforce critical validation (missing required fields)
-            if "Missing required" in error_msg:
-                logger.error(f"{self.name}: Critical FAQ validation failure: {e}")
-                raise  # Don't write bad output
-            # Allow non-critical validation issues with fallback
-            logger.warning(f"{self.name}: FAQ validation issue: {e}, using fallback")
-            output = {
-                "page_type": "faq",
-                "product_name": content_copy.get("product_name", ""),
-                "questions": content_copy.get("questions", []),
-                "metadata": {
-                    "generated_at": datetime.now().isoformat(),
-                    "agent": self.name,
-                    "version": "1.0"
-                }
-            }
+        # Strict validation - all failures propagate (no fallback)
+        output = template.render(content_copy, blocks)
+        logger.info(f"{self.name}: FAQ validation passed")
         
         filepath = os.path.join(self.output_path, "faq.json")
         self._write_json(filepath, output)
         return filepath
     
     def _process_product_page(self, content: Dict[str, Any]) -> str:
-        """Process and save product page content using template."""
+        """Process and save product page content using template with strict validation."""
         template = ProductTemplate()
         # Use .get() instead of .pop() to avoid mutating original content
         blocks = content.get("blocks", {})
         content_copy = {k: v for k, v in content.items() if k != "blocks"}
         
-        try:
-            output = template.render(content_copy, blocks)
-        except ValueError as e:
-            error_msg = str(e)
-            # Enforce critical validation (missing required fields)
-            if "Missing required" in error_msg:
-                logger.error(f"{self.name}: Critical Product validation failure: {e}")
-                raise  # Don't write bad output
-            # Allow non-critical validation issues with fallback
-            logger.warning(f"{self.name}: Product validation issue: {e}, using fallback")
-            output = {
-                "page_type": "product",
-                "product": content_copy.get("product", {}),
-                "metadata": {
-                    "generated_at": datetime.now().isoformat(),
-                    "agent": self.name,
-                    "version": "1.0"
-                }
-            }
+        # Strict validation - all failures propagate (no fallback)
+        output = template.render(content_copy, blocks)
+        logger.info(f"{self.name}: Product page validation passed")
         
         filepath = os.path.join(self.output_path, "product_page.json")
         self._write_json(filepath, output)
         return filepath
     
     def _process_comparison(self, content: Dict[str, Any]) -> str:
-        """Process and save comparison page content using template."""
+        """Process and save comparison page content using template with strict validation."""
         template = ComparisonTemplate()
         # Use .get() instead of .pop() to avoid mutating original content
         blocks = content.get("blocks", {})
         content_copy = {k: v for k, v in content.items() if k != "blocks"}
         
-        try:
-            output = template.render(content_copy, blocks)
-        except ValueError as e:
-            error_msg = str(e)
-            # Enforce critical validation (missing required fields)
-            if "Missing required" in error_msg:
-                logger.error(f"{self.name}: Critical Comparison validation failure: {e}")
-                raise  # Don't write bad output
-            # Allow non-critical validation issues with fallback
-            logger.warning(f"{self.name}: Comparison validation issue: {e}, using fallback")
-            output = {
-                "page_type": "comparison",
-                "products": content_copy.get("products", {}),
-                "comparison": content_copy.get("comparison", {}),
-                "recommendation": content_copy.get("recommendation", ""),
-                "metadata": {
-                    "generated_at": datetime.now().isoformat(),
-                    "agent": self.name,
-                    "version": "1.0"
-                }
-            }
+        # Strict validation - all failures propagate (no fallback)
+        output = template.render(content_copy, blocks)
+        logger.info(f"{self.name}: Comparison page validation passed")
         
         filepath = os.path.join(self.output_path, "comparison_page.json")
         self._write_json(filepath, output)
-        
         return filepath
     
     def _write_json(self, filepath: str, data: Dict[str, Any]) -> None:

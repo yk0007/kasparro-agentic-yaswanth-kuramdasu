@@ -3,8 +3,8 @@
   "product": {
     "name": "GlowBoost Vitamin C Serum",
     "tagline": "Brighten Up with Vitamin C Power",
-    "headline": "Brighten Your Complexion with 10% Vitamin C GlowBoost Serum",
-    "description": "Get ready to unlock a brighter, more even-toned complexion with GlowBoost Vitamin C Serum, expertly formulated with 10% Vitamin C to deliver unparalleled brightening benefits. This potent serum not only fades dark spots, but also deeply nourishes the skin with Hyaluronic Acid, leaving you with a radiant and healthy-looking glow. Perfect for oily and combination skin types, GlowBoost Vitamin C Serum is the perfect addition to your skincare routine, providing a powerful and effective solution for a more luminous you. With its carefully crafted blend of ingredients, this serum is poised to revolutionize your skincare regimen and reveal your most radiant skin yet.",
+    "headline": "Unlock Radiant Skin with 10% Vitamin C GlowBoost Serum",
+    "description": "Unlock a radiant glow with GlowBoost Vitamin C Serum, powered by 10% Vitamin C and Hyaluronic Acid to deliver unparalleled brightening and dark spot-fading results. This potent serum is specially formulated to tackle uneven skin tone, leaving you with a more even and luminous complexion. Perfect for oily and combination skin types, GlowBoost Vitamin C Serum absorbs quickly and works tirelessly to reveal your natural glow. By harnessing the synergistic power of Vitamin C and Hyaluronic Acid, this serum provides a transformative skincare experience that will leave your skin looking brighter, smoother, and more radiant than ever.",
     "product_type": "10% Vitamin C",
     "key_features": [
       "10% Vitamin C",
@@ -22,11 +22,11 @@
       "ingredient_details": [
         {
           "name": "Vitamin C",
-          "description": "A potent antioxidant that helps to brighten and even out skin tone, reducing the appearance of fine lines and wrinkles while protecting the skin from environmental stressors."
+          "description": "A powerful antioxidant that helps brighten and even out skin tone, reducing the appearance of fine lines and wrinkles"
         },
         {
           "name": "Hyaluronic Acid",
-          "description": "A naturally occurring humectant that retains moisture in the skin, providing long-lasting hydration and leaving the skin feeling soft, supple, and plump."
+          "description": "A natural humectant that retains moisture, providing long-lasting hydration and leaving skin feeling soft, smooth, and supple"
         }
       ],
       "ingredient_count": 2,
@@ -41,14 +41,112 @@
       "detailed_benefits": [
         {
           "benefit": "Brightening",
-          "description": "GlowBoost Vitamin C Serum helps to even out your skin tone, giving you a brighter and more radiant complexion by reducing dullness and promoting a healthy glow."
+          "description": "Improves skin tone and radiance",
+          "category": "immediate_result",
+          "impact_score": 8,
+          "confidence": "high",
+          "evidence_strength": "strong",
+          "user_segments": [
+            "oily skin users",
+            "combination skin users"
+          ],
+          "time_to_effect": "immediate",
+          "sustainability": "short-term"
         },
         {
           "benefit": "Fades dark spots",
-          "description": "This serum effectively fades dark spots, hyperpigmentation, and acne scars, leaving your skin with a smoother and more uniform appearance, and a more even skin tone over time."
+          "description": "Reduces appearance of hyperpigmentation",
+          "category": "long_term_care",
+          "impact_score": 9,
+          "confidence": "high",
+          "evidence_strength": "strong",
+          "user_segments": [
+            "oily skin users",
+            "combination skin users",
+            "users with hyperpigmentation"
+          ],
+          "time_to_effect": "2-4 weeks",
+          "sustainability": "long-term"
         }
       ],
-      "total_benefits": 2
+      "ranked_benefits": [
+        {
+          "benefit": "Fades dark spots",
+          "description": "Reduces appearance of hyperpigmentation",
+          "category": "long_term_care",
+          "impact_score": 9,
+          "confidence": "high",
+          "evidence_strength": "strong",
+          "user_segments": [
+            "oily skin users",
+            "combination skin users",
+            "users with hyperpigmentation"
+          ],
+          "time_to_effect": "2-4 weeks",
+          "sustainability": "long-term"
+        },
+        {
+          "benefit": "Brightening",
+          "description": "Improves skin tone and radiance",
+          "category": "immediate_result",
+          "impact_score": 8,
+          "confidence": "high",
+          "evidence_strength": "strong",
+          "user_segments": [
+            "oily skin users",
+            "combination skin users"
+          ],
+          "time_to_effect": "immediate",
+          "sustainability": "short-term"
+        }
+      ],
+      "benefits_by_category": {
+        "immediate_result": [
+          {
+            "benefit": "Brightening",
+            "description": "Improves skin tone and radiance",
+            "category": "immediate_result",
+            "impact_score": 8,
+            "confidence": "high",
+            "evidence_strength": "strong",
+            "user_segments": [
+              "oily skin users",
+              "combination skin users"
+            ],
+            "time_to_effect": "immediate",
+            "sustainability": "short-term"
+          }
+        ],
+        "long_term_care": [
+          {
+            "benefit": "Fades dark spots",
+            "description": "Reduces appearance of hyperpigmentation",
+            "category": "long_term_care",
+            "impact_score": 9,
+            "confidence": "high",
+            "evidence_strength": "strong",
+            "user_segments": [
+              "oily skin users",
+              "combination skin users",
+              "users with hyperpigmentation"
+            ],
+            "time_to_effect": "2-4 weeks",
+            "sustainability": "long-term"
+          }
+        ],
+        "quality_of_life": []
+      },
+      "total_benefits": 2,
+      "metrics": {
+        "avg_impact_score": 8.5,
+        "high_impact_count": 2,
+        "top_benefit": "Fades dark spots",
+        "confidence_distribution": {
+          "high": 2,
+          "medium": 0,
+          "low": 0
+        }
+      }
     },
     "how_to_use": {
       "raw_instructions": "Apply 2–3 drops in the morning before sunscreen",
@@ -56,11 +154,11 @@
       "expanded_instructions": {
         "steps": [
           "Apply 2-3 drops of GlowBoost Vitamin C Serum to your face and neck in the morning",
-          "Gently massage the serum into your skin until fully absorbed"
+          "Gently massage the serum into your skin until it is fully absorbed"
         ],
         "tips": [
-          "Apply before sunscreen for optimal results",
-          "Avoid applying to broken or irritated skin"
+          "Use GlowBoost Vitamin C Serum consistently for optimal results",
+          "Always apply sunscreen after using the serum"
         ],
         "frequency": "daily"
       },
@@ -80,31 +178,120 @@
         "Oily",
         "Combination"
       ],
-      "expanded_safety": {
-        "precautions": [
-          "Discontinue use if irritation or mild tingling persists",
-          "Perform a patch test before using on the face",
-          "Avoid applying to broken or damaged skin"
+      "usage_warnings": [
+        {
+          "type": "usage_warning",
+          "warning": "Mild tingling for sensitive skin",
+          "severity": "low",
+          "consequence": "Temporary discomfort or redness",
+          "mitigation": "Start with a patch test, reduce frequency of application or discontinue use if irritation persists"
+        },
+        {
+          "type": "usage_warning",
+          "warning": "Avoid contact with eyes",
+          "severity": "medium",
+          "consequence": "Irritation, redness, or burning sensation in the eyes",
+          "mitigation": "Wash hands before applying, avoid applying near the eye area, and rinse eyes thoroughly with water if contact occurs"
+        }
+      ],
+      "suitability_flags": [
+        {
+          "flag": "Not suitable for dry or sensitive skin",
+          "reason": "10% Vitamin C may exacerbate dryness or irritation",
+          "alternative": "Consider a lower concentration of Vitamin C or a product formulated for dry or sensitive skin"
+        }
+      ],
+      "warnings_by_severity": {
+        "critical": [],
+        "high": [],
+        "medium": [
+          {
+            "type": "usage_warning",
+            "warning": "Avoid contact with eyes",
+            "severity": "medium",
+            "consequence": "Irritation, redness, or burning sensation in the eyes",
+            "mitigation": "Wash hands before applying, avoid applying near the eye area, and rinse eyes thoroughly with water if contact occurs"
+          }
         ],
-        "who_should_avoid": [
-          "Sensitive skin types",
-          "Those with known allergies to vitamin C or other serum ingredients"
-        ],
-        "storage": "Store in a cool, dry place, away from direct sunlight and out of reach of children"
+        "low": [
+          {
+            "type": "usage_warning",
+            "warning": "Mild tingling for sensitive skin",
+            "severity": "low",
+            "consequence": "Temporary discomfort or redness",
+            "mitigation": "Start with a patch test, reduce frequency of application or discontinue use if irritation persists"
+          }
+        ]
       },
-      "product_name": "GlowBoost Vitamin C Serum"
+      "risk_score": 3.5,
+      "risk_level": "medium",
+      "contraindications": [
+        "rosacea",
+        "eczema",
+        "open wounds"
+      ],
+      "expanded_safety": {
+        "usage_warnings": [
+          {
+            "type": "usage_warning",
+            "warning": "Mild tingling for sensitive skin",
+            "severity": "low",
+            "consequence": "Temporary discomfort or redness",
+            "mitigation": "Start with a patch test, reduce frequency of application or discontinue use if irritation persists"
+          },
+          {
+            "type": "usage_warning",
+            "warning": "Avoid contact with eyes",
+            "severity": "medium",
+            "consequence": "Irritation, redness, or burning sensation in the eyes",
+            "mitigation": "Wash hands before applying, avoid applying near the eye area, and rinse eyes thoroughly with water if contact occurs"
+          }
+        ],
+        "suitability_flags": [
+          {
+            "flag": "Not suitable for dry or sensitive skin",
+            "reason": "10% Vitamin C may exacerbate dryness or irritation",
+            "alternative": "Consider a lower concentration of Vitamin C or a product formulated for dry or sensitive skin"
+          }
+        ],
+        "risk_score": 3.5,
+        "contraindications": [
+          "rosacea",
+          "eczema",
+          "open wounds"
+        ],
+        "storage": "Store in a cool, dry place, away from direct sunlight and out of reach of children",
+        "precautions": [
+          "Use in a well-ventilated area",
+          "Avoid using with other exfoliating products or retinoids",
+          "Discontinue use if irritation or allergic reaction occurs"
+        ]
+      },
+      "product_name": "GlowBoost Vitamin C Serum",
+      "metrics": {
+        "total_warnings": 2,
+        "severity_distribution": {
+          "critical": 0,
+          "high": 0,
+          "medium": 1,
+          "low": 1
+        },
+        "has_critical_warnings": false,
+        "has_contraindications": true
+      }
     },
     "price": "₹699"
   },
   "metadata": {
-    "generated_at": "2025-12-15T00:24:17.121513",
+    "generated_at": "2025-12-15T20:42:41.938900",
     "template_type": "product",
     "version": "1.0",
     "logic_blocks_used": [
       "benefits_block",
       "usage_block",
       "ingredients_block",
-      "safety_block"
+      "safety_block",
+      "cross_block_analysis"
     ]
   }
 }

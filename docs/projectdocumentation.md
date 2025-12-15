@@ -235,15 +235,23 @@ class WorkflowState(TypedDict):
 
 ### 4.5 Logic Blocks
 
-Logic blocks are **pure functions** that transform product data into structured content:
+Logic blocks are **pure functions** that transform product data into structured content with deep evaluation:
 
-| Block               | Purpose                        | Output                                          |
-| ------------------- | ------------------------------ | ----------------------------------------------- |
-| `benefits_block`    | Extract and structure benefits | primary_benefits, detailed_benefits, categories |
-| `usage_block`       | Parse usage instructions       | steps, frequency, best_time, tips               |
-| `ingredients_block` | Enrich ingredient data         | active_ingredients, ingredient_details          |
-| `safety_block`      | Generate safety info           | side_effects, precautions, suitability          |
-| `comparison_blocks` | Compare two products           | ingredients_diff, benefits_diff, pricing        |
+| Block                  | Purpose                         | Output                                                                      |
+| ---------------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| `benefits_block`       | Analyze and score benefits      | impact_score (0-10), confidence, user_segments, ranked_benefits, metrics    |
+| `usage_block`          | Parse usage instructions        | steps, frequency, best_time, tips                                           |
+| `ingredients_block`    | Enrich ingredient data          | active_ingredients, ingredient_details                                      |
+| `safety_block`         | Risk assessment and safety info | risk_score (0-10), severity levels, contraindications, warnings_by_severity |
+| `comparison_blocks`    | Compare two products            | ingredients_diff, benefits_diff, pricing                                    |
+| `cross_block_analyzer` | Cross-block intelligence        | benefit_safety_conflicts, risk_benefit_ratio, ingredient_benefit_links      |
+
+**Enhanced Features:**
+
+- **Impact Scoring**: Benefits scored 0-10 with confidence levels (high/medium/low)
+- **Risk Assessment**: Safety warnings categorized by severity (critical/high/medium/low)
+- **Cross-Block Analysis**: Detects conflicts between benefits and safety warnings
+- **Risk-Benefit Ratio**: Calculated metric weighing benefits against risks
 
 ### 4.6 Template Engine
 
@@ -297,6 +305,49 @@ def invoke_with_retry(prompt: str, max_attempts: int = 4) -> str:
             logger.warning(f"Rate limit, rotating key...")
             continue
     raise Exception("All API keys exhausted")
+```
+
+### 4.8 Quality Gates and Failure Paths
+
+The workflow implements explicit quality gates and failure paths to ensure content integrity:
+
+```mermaid
+graph TD
+    A[generate_questions] --> B[faq_node]
+    A --> C[product_page_node]
+    A --> D[comparison_node]
+    B --> E[validate_content_node]
+    C --> E
+    D --> E
+    E -->|"valid"| F[output_node]
+    E -->|"errors"| G[END - No output]
+    F --> H[END]
+```
+
+**Quality Gate: `validate_content_node`**
+
+- Checks all 3 content types exist with required structure
+- Verifies FAQ has ≥15 questions
+- Validates Product and Comparison content have required fields
+- Routes to `output_node` only if all checks pass, else skips to END
+
+**Validation Enforcement in OutputAgent:**
+
+- Template validation is **strictly enforced** - validation failures raise exceptions
+- No fallback logic - invalid content causes workflow to fail fast
+- No corrupted JSON files are written when validation fails
+
+**Question Regeneration Loop:**
+
+```python
+# If LLM generates < 15 questions, regeneration is triggered:
+if len(questions) < min_questions:
+    # Step 1: LLM regeneration with exclusion list
+    additional = _regenerate_with_llm(product, existing, needed)
+
+    # Step 2: Fall back to templates if LLM fails
+    if not enough:
+        additional = _template_fallback_questions(product, needed)
 ```
 
 ---

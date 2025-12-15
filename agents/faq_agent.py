@@ -93,18 +93,25 @@ class FAQAgent:
         """
         logger.info(f"{self.name}: Creating FAQ for {product.name}")
         errors: List[str] = []
-        agent_metrics = {"tokens_in": 0, "tokens_out": 0, "output_len": 0, "prompts": {}}
+        agent_metrics = {"tokens_in": 0, "tokens_out": 0, "output_len": 0, "prompts": {}, "quality_flags": {}}
         
         try:
             # Select questions for FAQ (ensure diversity)
             selected = self._select_questions(questions)
             logger.info(f"{self.name}: Selected {len(selected)} questions for FAQ")
             
+            # Track deduplication quality metric
+            original_count = len(questions)
+            unique_count = len(selected)
+            agent_metrics["quality_flags"]["deduped_from"] = original_count
+            agent_metrics["quality_flags"]["final_count"] = unique_count
+            
             # Generate logic blocks
             blocks = self._generate_blocks(product)
             
             # Generate answers for each question with metrics tracking
             faq_items = []
+            answer_scores = []
             for question in selected:
                 answer, blocks_used, call_metrics = self._generate_answer(product, question, blocks)
                 faq_items.append({
@@ -114,6 +121,8 @@ class FAQAgent:
                     "answer": answer,
                     "logic_blocks_used": blocks_used
                 })
+                # Track answer quality (length as proxy)
+                answer_scores.append(len(answer))
                 # Aggregate per-call metrics
                 if call_metrics:
                     agent_metrics["tokens_in"] += call_metrics.get("tokens_in", 0)
@@ -122,11 +131,22 @@ class FAQAgent:
                     if "prompt_hash" in call_metrics:
                         agent_metrics["prompts"][call_metrics["prompt_hash"]] = call_metrics.get("prompt_text", "")
             
+            # Add answer quality metrics
+            if answer_scores:
+                agent_metrics["quality_flags"]["answer_length_min"] = min(answer_scores)
+                agent_metrics["quality_flags"]["answer_length_max"] = max(answer_scores)
+                agent_metrics["quality_flags"]["answer_length_avg"] = sum(answer_scores) / len(answer_scores)
+            
             # Build final FAQ content
             faq_content = {
                 "product_name": product.name,
                 "questions": faq_items,
-                "blocks": blocks
+                "blocks": blocks,
+                "quality_metrics": {
+                    "total_faqs": len(faq_items),
+                    "deduped_from": original_count,
+                    "meets_minimum": len(faq_items) >= self.min_faqs
+                }
             }
             
             logger.info(f"{self.name}: Generated {len(faq_items)} FAQ items")
@@ -255,11 +275,21 @@ class FAQAgent:
         return score
     
     def _generate_blocks(self, product: ProductModel) -> Dict[str, Any]:
-        """Generate all logic blocks for answer generation."""
+        """Generate all logic blocks for answer generation with cross-block analysis."""
+        from logic_blocks.cross_block_analyzer import analyze_benefit_safety_conflicts
+        
+        benefits = generate_benefits_block(product)
+        usage = generate_usage_block(product)
+        safety = generate_safety_block(product)
+        
+        # Cross-block analysis for deeper insights
+        conflicts = analyze_benefit_safety_conflicts(benefits, safety)
+        
         return {
-            "benefits_block": generate_benefits_block(product),
-            "usage_block": generate_usage_block(product),
-            "safety_block": generate_safety_block(product)
+            "benefits_block": benefits,
+            "usage_block": usage,
+            "safety_block": safety,
+            "cross_block_analysis": conflicts
         }
     
     def _generate_answer(
