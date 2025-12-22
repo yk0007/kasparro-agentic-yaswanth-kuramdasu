@@ -1,4 +1,4 @@
-# Multi-Agent Content Generation System
+# ContentCraft – Multi-Agent AI Content Generation System
 
 A production-grade agentic automation system that generates structured, machine-readable content pages from product data.
 
